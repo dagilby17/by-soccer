@@ -68,9 +68,28 @@ small,.hint{color:#b7cbd7}.controls{display:flex;gap:8px;justify-content:center;
 <script>
 const clubs=[
 ["ברצלונה","BAR","#A50044","#004D98"],["ריאל מדריד","RMA","#FEBE10","#1D2951"],["באיירן מינכן","FCB","#DC052D","#0066B2"],["פריז סן ז׳רמן","PSG","#004170","#DA291C"],["יובנטוס","JUV","#111111","#FFFFFF"],["אינטר מילאן","INT","#010E80","#111111"],["AC מילאן","MIL","#FB090B","#111111"],["מנצ׳סטר סיטי","MCI","#6CABDD","#1C2C5B"],["מנצ׳סטר יונייטד","MUN","#DA291C","#FBE122"],["צ׳לסי","CHE","#034694","#FFFFFF"],["טוטנהאם","TOT","#132257","#FFFFFF"],["דורטמונד","BVB","#FDE100","#111111"],["רומא","ROM","#8E1F2F","#F2A900"],["ליברפול","LIV","#C8102E","#00B2A9"],["אתלטיקו מדריד","ATM","#CB3524","#272E61"],["ריאל בטיס","BET","#00954C","#FFFFFF"],["אספניול","ESP","#005DAA","#FFFFFF"],["ארסנל","ARS","#EF0107","#063672"],["ויאריאל","VIL","#FFE114","#005187"],["ולנסיה","VAL","#FF7900","#111111"],["ברייטון","BHA","#0057B8","#FFFFFF"],["קלן","KOE","#FFFFFF","#ED1C24"],["אינטר מיאמי","MIA","#F7B5CD","#111111"]];
+const nationalTeams=[
+["🇦🇷 ארגנטינה","ARG","#75AADB","#FFFFFF"],
+["🇧🇷 ברזיל","BRA","#009739","#FFDF00"],
+["🇫🇷 צרפת","FRA","#0055A4","#EF4135"],
+["🇪🇸 ספרד","ESP","#AA151B","#F1BF00"],
+["🏴 אנגליה","ENG","#FFFFFF","#C8102E"],
+["🇵🇹 פורטוגל","POR","#006600","#FF0000"],
+["🇩🇪 גרמניה","GER","#111111","#DD0000"],
+["🇮🇱 ישראל","ISR","#FFFFFF","#0038B8"]
+];
+const clubCount=clubs.length;
+clubs.push(...nationalTeams);
 const $=s=>document.querySelector(s),canvas=$("#field"),ctx=canvas.getContext("2d");
-clubs.forEach((c,i)=>{let o=document.createElement("option");o.value=i;o.textContent=c[0];$("#teamA").append(o);$("#teamB").append(o.cloneNode(true))});
-$("#teamA").value=0;$("#teamB").value=1;
+function fillTeamSelect(select){
+ const clubGroup=document.createElement("optgroup");clubGroup.label="מועדונים:";
+ clubs.slice(0,clubCount).forEach((c,i)=>{let o=document.createElement("option");o.value=i;o.textContent=c[0];clubGroup.append(o)});
+ const nationalGroup=document.createElement("optgroup");nationalGroup.label="נבחרות:";
+ nationalTeams.forEach((c,i)=>{let o=document.createElement("option");o.value=clubCount+i;o.textContent=c[0];nationalGroup.append(o)});
+ select.append(clubGroup,nationalGroup);
+}
+fillTeamSelect($("#teamA"));fillTeamSelect($("#teamB"));
+$("#teamA").value=0;$("#teamB").value=clubCount;
 let game=null,keys={},last=0,selected=9;
 const W=1000,H=620,field={x:45,y:35,w:910,h:550};
 const difficulty={easy:{speed:.65,press:.018,passRate:.35,wait:2200},medium:{speed:.85,press:.027,passRate:.58,wait:1800},hard:{speed:1,press:.038,passRate:.78,wait:1400}};
