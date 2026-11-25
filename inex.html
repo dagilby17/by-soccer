@@ -212,7 +212,7 @@ if(b.owner){
    : carrier.x>=field.x+field.w*.77 && Math.abs(carrier.y-H/2)<128;
  if(inOwnBox){
    // השוער מסתער לעבר נושא הכדור, אך נשאר בתוך גבולות המגרש.
-   moveToward(keeper,carrier.x,carrier.y,4.8*game.diff.speed,step);
+   moveToward(keeper,carrier.x,carrier.y,3.0*game.diff.speed,step);
    if(distance(keeper,carrier)<25){
      giveOwner(defendingSide,0);
      b.isShot=false;
