@@ -201,6 +201,31 @@ if(b.owner?.side==="A"&&!keeperCalm&&i===nearest(game.B,game.A[b.owner.index].x,
 if(keeperCalm){tx=q.homeX;ty=q.homeY}
 moveToward(q,tx,ty,2.2*game.diff.speed,step);
 if(!b.owner&&distance(q,b)<19&&Math.hypot(b.vx,b.vy)<4)giveOwner("B",i)});
+// שוער יוצא מהשער כדי לעצור שחקן יריב שנכנס לרחבה.
+if(b.owner){
+ const attackingSide=b.owner.side;
+ const carrier=game[attackingSide][b.owner.index];
+ const defendingSide=attackingSide==="A"?"B":"A";
+ const keeper=game[defendingSide][0];
+ const inOwnBox = attackingSide==="B"
+   ? carrier.x<=field.x+field.w*.23 && Math.abs(carrier.y-H/2)<128
+   : carrier.x>=field.x+field.w*.77 && Math.abs(carrier.y-H/2)<128;
+ if(inOwnBox){
+   // השוער מסתער לעבר נושא הכדור, אך נשאר בתוך גבולות המגרש.
+   moveToward(keeper,carrier.x,carrier.y,4.8*game.diff.speed,step);
+   if(distance(keeper,carrier)<25){
+     giveOwner(defendingSide,0);
+     b.isShot=false;
+     game.botWait=1.1;
+     game.botPlan="build";
+     if(defendingSide==="A")game.keeperCaught=true;
+     $("#status").textContent="🧤 השוער יצא מהשער ותפס את הכדור!";
+   }
+ }else{
+   const homeX=defendingSide==="A"?field.x+28:field.x+field.w-28;
+   moveToward(keeper,homeX,H/2+(b.y-H/2)*.18,2.5,step);
+ }
+}
 // היריבה יכולה ללחוץ ולחטוף משחקן שמחזיק בכדור, אם היא מגיעה ממש קרוב.
 if(b.owner?.side==="A"){
  let carrier=game.A[b.owner.index];
