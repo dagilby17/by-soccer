@@ -46,10 +46,10 @@ small,.hint{color:#b7cbd7}.controls{display:flex;gap:8px;justify-content:center;
 <button class="up" data-key="ArrowUp">▲</button><button class="left" data-key="ArrowLeft">◀</button><button class="down" data-key="ArrowDown">▼</button><button class="right" data-key="ArrowRight">▶</button>
 </div>
 <div class="actions">
-<button data-key="KeyZ" id="passBtn" title="לחיצה קצרה: מסירה • לחיצה ארוכה: מסירת עומק">Z מסירה<br><small>החזק למסירת עומק</small></button><button data-key="ShiftLeft">Left Shift בעיטה ⚽</button><button data-key="KeyX">X החלפה</button><button data-key="KeyB">B חטיפה</button><button data-key="KeyG">G גליץ׳</button>
+<button data-key="KeyZ" id="passBtn" title="לחיצה קצרה: מסירה • לחיצה ארוכה: מסירת עומק">Z מסירה<br><small>החזק למסירת עומק</small></button><button data-key="ShiftLeft">Left Shift בעיטה ⚽</button><button data-key="KeyC" id="sprintBtn" style="background:#7b2cbf;color:white">C ספרינט ⚡</button><button data-key="KeyX">X החלפה</button><button data-key="KeyB">B חטיפה</button><button data-key="KeyG">G גליץ׳</button>
 </div>
 </div>
-<p class="hint">מקלדת: WASD / חצים לתנועה · Z למסירה (לחיצה ארוכה למסירת עומק) · Left Shift לבעיטה · X להחלפת שחקן · B לחטיפה · G לגליץ׳</p>
+<p class="hint">מקלדת: WASD / חצים לתנועה · Z למסירה (לחיצה ארוכה למסירת עומק) · מחזיקים C יחד עם אחד מכיווני התנועה כדי לרוץ מהר מאוד ⚡ · Left Shift לבעיטה · X להחלפת שחקן · B לחטיפה · G לגליץ׳</p>
 </main>
 <aside class="side panel">
 <h3>📋 מצב המשחק</h3><p id="matchInfo">לא התחיל עדיין</p>
@@ -63,7 +63,7 @@ small,.hint{color:#b7cbd7}.controls{display:flex;gap:8px;justify-content:center;
 </div>
 </div>
 <div class="modal hidden" id="rulesModal"><div class="modalbox"><h2>📜 חוקי המשחק והמקשים</h2>
-<ul><li>משחק נגד בוט, עם 11 שחקנים בכל קבוצה.</li><li>WASD או חצים – תנועה.</li><li>Z – לחיצה קצרה למסירה; לחיצה ארוכה למסירת עומק לשטח.</li><li>Left Shift – בעיטה; אם הכדור אצלך, בועטים לכיוון השער היריב.</li><li>X – החלפת שחקן הנשלט, כולל השוער.</li><li>אפשר למסור לשוער, לשלוט בו, לצאת מהשער ולעלות עם הכדור.</li><li>B – חטיפה קרובה.</li><li>G – גליץ׳ קדימה.</li><li>שערים, שעון, קרנות, חוץ ובעיטות שוער מתנהלים אוטומטית.</li><li>גרסה זו פועלת מקומית בדפדפן. מצב אונליין אמיתי עדיין אינו מחובר לשרת.</li></ul><button id="continue">המשך למשחק</button></div></div>
+<ul><li>משחק נגד בוט, עם 11 שחקנים בכל קבוצה.</li><li>WASD או חצים – תנועה.</li><li>Z – לחיצה קצרה למסירה; לחיצה ארוכה למסירת עומק לשטח.</li><li>C – ספרינט מהיר מאוד בזמן שמחזיקים את המקש.</li><li>Left Shift – בעיטה; אם הכדור אצלך, בועטים לכיוון השער היריב.</li><li>X – החלפת שחקן הנשלט, כולל השוער.</li><li>אפשר למסור לשוער, לשלוט בו, לצאת מהשער ולעלות עם הכדור.</li><li>B – חטיפה קרובה.</li><li>G – גליץ׳ קדימה.</li><li>שערים, שעון, קרנות, חוץ ובעיטות שוער מתנהלים אוטומטית.</li><li>גרסה זו פועלת מקומית בדפדפן. מצב אונליין אמיתי עדיין אינו מחובר לשרת.</li></ul><button id="continue">המשך למשחק</button></div></div>
 <div class="modal hidden" id="endModal"><div class="modalbox"><h2 id="endTitle">המשחק הסתיים!</h2><p id="endText"></p><div id="endChoices" class="actions"></div><button id="again">משחק חדש</button></div></div>
 <script>
 const clubs=[
@@ -155,7 +155,8 @@ function moveToward(p,x,y,speed,step){let dx=x-p.x,dy=y-p.y,d=Math.hypot(dx,dy)|
 function update(dt){if(!game||!game.playing)return;let step=dt/16.67,b=game.ball;if(game.paused>0){game.paused-=dt/1000;return}
 let p=controlled(),dx=(keys.ArrowRight||keys.KeyD?1:0)-(keys.ArrowLeft||keys.KeyA?1:0),dy=(keys.ArrowDown||keys.KeyS?1:0)-(keys.ArrowUp||keys.KeyW?1:0),len=Math.hypot(dx,dy)||1;
 // כל שחקן, כולל השוער, ניתן לשליטה כשהוא נבחר.
-p.x+=dx/len*3.5*step;p.y+=dy/len*3.5*step;
+const moveSpeed=keys.KeyC?10.5:3.5;
+p.x+=dx/len*moveSpeed*step;p.y+=dy/len*moveSpeed*step;
 p.x=Math.max(field.x+8,Math.min(field.x+field.w-8,p.x));
 p.y=Math.max(field.y+8,Math.min(field.y+field.h-8,p.y));
 if(b.owner){let owner=game[b.owner.side][b.owner.index];b.x=owner.x+(b.owner.side==="A"?14:-14);b.y=owner.y;
