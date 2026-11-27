@@ -16,7 +16,6 @@ select{background:#eaf1f5;color:#15232c}#difficulty option[value="extreme"]{back
 .hud{display:flex;align-items:center;justify-content:center;gap:20px;font-size:clamp(20px,3vw,32px);font-weight:bold;margin:8px 0}.score{color:#ffd166}
 small,.hint{color:#b7cbd7}.controls{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
 .modal{position:fixed;inset:0;background:#000b;display:flex;align-items:center;justify-content:center;padding:15px;z-index:10}.modalbox{background:#10232e;border:1px solid #456173;border-radius:18px;padding:22px;max-width:700px;max-height:90vh;overflow:auto}.modalbox h2{color:#ffd166}.modalbox ul{line-height:1.8}
-#creatorModal{z-index:30}#creatorBox{width:min(100%,1000px);height:90vh;display:flex;flex-direction:column;gap:10px}#creatorTools{display:flex;gap:8px;flex-wrap:wrap}#creatorSearch{flex:1;min-width:180px;padding:11px;border-radius:10px;border:1px solid #456173;font:inherit}#cheatList{overflow:auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:7px;padding:4px;align-content:start}#cheatList button{font-size:13px;padding:10px;text-align:right;background:#263f54;color:#fff;border:1px solid #46657a}#cheatList button:hover{background:#7040a0}#creatorCount{color:#b7cbd7;font-size:13px}
 .hidden{display:none!important}
 .touch{display:grid;grid-template-columns:repeat(3,58px);grid-template-rows:repeat(2,52px);gap:5px;direction:ltr}
 .touch button{padding:5px;background:#35596b;color:white}.touch .up{grid-column:2;grid-row:1}.touch .left{grid-column:1;grid-row:2}.touch .down{grid-column:2;grid-row:2}.touch .right{grid-column:3;grid-row:2}
@@ -59,13 +58,13 @@ small,.hint{color:#b7cbd7}.controls{display:flex;gap:8px;justify-content:center;
 <p>🟡 השחקן בשליטתך מסומן בעיגול צהוב. אפשר גם לבחור בשוער (GK).</p>
 <p>🔵 שחקני הקבוצה שלך</p><p>🔴 היריבים</p>
 <p>מסירה מכוונת לפי כיוון התנועה. השוער יכול להיות יעד למסירה, לצאת מהשער ולעלות קדימה כשהוא בשליטתך.</p>
-<button id="creatorBtn" style="width:100%;background:#7b2cbf;color:white;margin-bottom:8px">🛠️ היוצר שלי – 1,001 צ׳יטים</button><button class="danger" id="reset">⏹ סיים / איפוס</button>
+<button class="danger" id="reset">⏹ סיים / איפוס</button>
 </aside>
 </div>
 </div>
 <div class="modal hidden" id="rulesModal"><div class="modalbox"><h2>📜 חוקי המשחק והמקשים</h2>
 <ul><li>משחק נגד בוט, עם 11 שחקנים בכל קבוצה.</li><li>WASD או חצים – תנועה.</li><li>Z – לחיצה קצרה למסירה; לחיצה ארוכה למסירת עומק לשטח.</li><li>C – ספרינט מהיר מאוד בזמן שמחזיקים את המקש.</li><li>Left Shift – בעיטה; אם הכדור אצלך, בועטים לכיוון השער היריב.</li><li>X – החלפת שחקן הנשלט, כולל השוער.</li><li>אפשר למסור לשוער, לשלוט בו, לצאת מהשער ולעלות עם הכדור.</li><li>B – חטיפה קרובה.</li><li>G – גליץ׳ קדימה.</li><li>שערים, שעון, קרנות, חוץ ובעיטות שוער מתנהלים אוטומטית.</li><li>גרסה זו פועלת מקומית בדפדפן. מצב אונליין אמיתי עדיין אינו מחובר לשרת.</li></ul><button id="continue">המשך למשחק</button></div></div>
-<div class="modal hidden" id="creatorModal"><div class="modalbox" id="creatorBox"><div class="row" style="justify-content:space-between"><h2 style="margin:0;color:#d6a6ff">🛠️ היוצר שלי – מרכז הצ׳יטים</h2><button id="closeCreator" class="danger">סגור ✖</button></div><p style="margin:0">1,001 צ׳יטים שונים! בחר צ׳יט מהרשימה כדי להפעיל אותו מיד במשחק. אפשר להפעיל כמה צ׳יטים ברצף!</p><div id="creatorNotice" style="background:#1b3444;border:1px solid #526b7c;border-radius:10px;padding:9px;color:#f4f7fb">💡 פתח משחק, בחר צ׳יט מהרשימה והוא יפעל מיד.</div><div id="creatorTools"><input id="creatorSearch" placeholder="🔎 חפש צ׳יט..."><span id="creatorCount"></span></div><div id="cheatList"></div></div></div>
+</div>
 <div class="modal hidden" id="endModal"><div class="modalbox"><h2 id="endTitle">המשחק הסתיים!</h2><p id="endText"></p><div id="endChoices" class="actions"></div><button id="again">משחק חדש</button></div></div>
 <script>
 const clubs=[
@@ -520,7 +519,7 @@ addCheatFamily('חגיגה – פיצוץ קונפטי',i=>{const count=20+i*8,c
 addCheatFamily('זמן – קצב המשחק',i=>{const scale=+(0.4+i*.07).toFixed(2);return{name:`שנה קצב משחק ×${scale}`,run:()=>{game.timeScale=scale;game.timeScaleUntil=performance.now()+60000;}}});
 
 // 1001: ניצחון טכני לקבוצה שלך – קובע תוצאה 3:0 ומסיים מיד את המשחק.
-cheatCatalog.push({id:1001,cat:'תוצאה – ניצחון טכני',name:'ניצחון טכני – ניצחון מיידי 3:0',run:()=>{game.scores[0]=3;game.scores[1]=0;creatorSetScore();$('#creatorModal').classList.add('hidden');endGame('🏆 ניצחון טכני!');}});
+cheatCatalog.push({id:1001,cat:'תוצאה – ניצחון טכני',name:'ניצחון טכני – ניצחון מיידי 3:0',run:()=>{game.scores[0]=3;game.scores[1]=0;creatorSetScore();endGame('🏆 ניצחון טכני!');}});
 
 const allCheats=cheatCatalog;
 function renderCheats(){
@@ -537,9 +536,6 @@ function renderCheats(){
   });$('#cheatList').appendChild(b);
  });
 }
-$('#creatorBtn').addEventListener('click',()=>{$('#creatorModal').classList.remove('hidden');$('#creatorNotice').textContent=game?'בחר צ׳יט מהרשימה והוא יופעל מיד!':'💡 הרשימה פתוחה. התחל משחק, ואז לחץ על צ׳יט כדי להפעיל אותו.';renderCheats();});
-$('#closeCreator').onclick=()=>$('#creatorModal').classList.add('hidden');
-$('#creatorSearch').addEventListener('input',renderCheats);
 function shadeHex(hex,delta){try{let n=parseInt(hex.slice(1),16),r=Math.max(0,Math.min(255,(n>>16)+delta)),g=Math.max(0,Math.min(255,((n>>8)&255)+delta)),b=Math.max(0,Math.min(255,(n&255)+delta));return "#"+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1)}catch(e){return hex}}
 function draw(){ctx.clearRect(0,0,W,H);ctx.fillStyle=(game&&game.pitchTint)||"#16804b";ctx.fillRect(0,0,W,H);for(let i=0;i<10;i++){ctx.fillStyle=(game&&game.pitchTint)?(i%2?game.pitchTint:shadeHex(game.pitchTint,-12)):(i%2?"#137343":"#16804b");ctx.fillRect(field.x+i*field.w/10,field.y,field.w/10,field.h)}
 ctx.strokeStyle="#fff";ctx.lineWidth=4;ctx.strokeRect(field.x,field.y,field.w,field.h);ctx.beginPath();ctx.moveTo(W/2,field.y);ctx.lineTo(W/2,field.y+field.h);ctx.stroke();ctx.beginPath();ctx.arc(W/2,H/2,112.5,0,Math.PI*2);ctx.stroke();ctx.fillStyle="#fff";ctx.fillRect(field.x-22.5,H/2-105,22.5,210);ctx.fillRect(field.x+field.w,H/2-105,22.5,210);ctx.strokeRect(field.x,H/2-210,180,420);ctx.strokeRect(field.x+field.w-180,H/2-210,180,420);ctx.strokeRect(field.x,H/2-105,75,210);ctx.strokeRect(field.x+field.w-75,H/2-105,75,210);
