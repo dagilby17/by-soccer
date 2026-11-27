@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Football Champions</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#08141b;color:#f4f7fb;font-family:Arial,Helvetica,sans-serif;direction:rtl}
+.wrap{max-width:1600px;margin:auto;padding:18px}.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+h1{margin:0;font-size:clamp(24px,4vw,38px);color:#ffd166}.sub{color:#a9c2d2;margin-top:5px}
+.panel{background:#10232e;border:1px solid #24404f;border-radius:16px;padding:14px;margin:12px 0}
+.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}.row>*{flex:1;min-width:150px}
+select,button{font:inherit;border:0;border-radius:10px;padding:11px 13px}
+select{background:#eaf1f5;color:#15232c}#difficulty option[value="extreme"]{background:#7b2cbf;color:#fff;font-weight:bold}button{background:#ffd166;color:#14232b;font-weight:bold;cursor:pointer}button:hover{filter:brightness(1.08)}button.secondary{background:#315263;color:white}button.danger{background:#e85d75;color:white}
+#field{width:100%;display:block;background:#167447;border:3px solid #e9f6ec;border-radius:14px;touch-action:none}
+.hud{display:flex;align-items:center;justify-content:center;gap:20px;font-size:clamp(20px,3vw,32px);font-weight:bold;margin:8px 0}.score{color:#ffd166}
+small,.hint{color:#b7cbd7}.controls{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.modal{position:fixed;inset:0;background:#000b;display:flex;align-items:center;justify-content:center;padding:15px;z-index:10}.modalbox{background:#10232e;border:1px solid #456173;border-radius:18px;padding:22px;max-width:700px;max-height:90vh;overflow:auto}.modalbox h2{color:#ffd166}.modalbox ul{line-height:1.8}
+#creatorModal{z-index:30}#creatorBox{width:min(100%,1000px);height:90vh;display:flex;flex-direction:column;gap:10px}#creatorTools{display:flex;gap:8px;flex-wrap:wrap}#creatorSearch{flex:1;min-width:180px;padding:11px;border-radius:10px;border:1px solid #456173;font:inherit}#cheatList{overflow:auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:7px;padding:4px;align-content:start}#cheatList button{font-size:13px;padding:10px;text-align:right;background:#263f54;color:#fff;border:1px solid #46657a}#cheatList button:hover{background:#7040a0}#creatorCount{color:#b7cbd7;font-size:13px}
+.hidden{display:none!important}
+.touch{display:grid;grid-template-columns:repeat(3,58px);grid-template-rows:repeat(2,52px);gap:5px;direction:ltr}
+.touch button{padding:5px;background:#35596b;color:white}.touch .up{grid-column:2;grid-row:1}.touch .left{grid-column:1;grid-row:2}.touch .down{grid-column:2;grid-row:2}.touch .right{grid-column:3;grid-row:2}
+.actions{display:flex;gap:7px;flex-wrap:wrap;justify-content:center}.actions button{min-width:70px}.actions #passBtn{min-width:112px;line-height:1.15}.actions #passBtn small{display:block;color:#14232b;font-size:11px;margin-top:3px}
+@media(min-width:800px){.gamegrid{display:grid;grid-template-columns:1fr 260px;gap:12px;align-items:start}.side{position:sticky;top:10px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="top"><div><h1>⚽ FOOTBALL CHAMPIONS</h1><div class="sub">משחק כדורגל דו־ממדי • גרסת HTML מקומית</div></div><button class="secondary" id="rulesBtn">📜 חוקים</button></header>
+<section class="panel" id="setup">
+<h2>בחר את המשחק שלך</h2>
+<div class="row">
+<label>הקבוצה שלך<select id="teamA"></select></label>
+<label>הקבוצה היריבה<select id="teamB"></select></label>
+<label>רמת קושי<select id="difficulty"><option value="easy">קל 🟢</option><option value="medium" selected>בינוני 🟡</option><option value="hard">קשה 🔴</option><option value="extreme">הכי קשה 🟣</option></select></label>
+<label>משך המשחק<select id="duration"><option value="5">5 דקות</option><option value="10" selected>10 דקות</option><option value="15">15 דקות</option><option value="20">20 דקות</option><option value="25">25 דקות</option><option value="30">30 דקות</option></select></label>
+</div>
+<small>בגרסה זו משחקים נגד בוט. מולטיפלייר בין מכשירים דורש שרת.</small>
+</section>
+<div class="gamegrid">
+<main>
+<div class="hud"><span id="nameA">קבוצה א׳</span><span class="score"><span id="scoreA">0</span> - <span id="scoreB">0</span></span><span id="nameB">קבוצה ב׳</span></div>
+<div class="hud" style="font-size:18px"><span id="clock">00:00</span><span id="status">בחר משחק כדי להתחיל</span></div>
+<canvas id="field" width="2100" height="1275"></canvas>
+<div id="crossMeter" class="hidden" style="margin:8px auto;max-width:620px;background:#10232e;border:1px solid #456173;border-radius:12px;padding:10px;text-align:center"><strong id="crossLabel">הגבהה – לחץ Q כדי לעצור במרכז!</strong><div style="position:relative;height:24px;background:linear-gradient(90deg,#d62828 0%,#f4a261 25%,#2a9d55 50%,#f4a261 75%,#d62828 100%);border-radius:7px;margin-top:8px;overflow:hidden"><div id="crossMarker" style="position:absolute;top:-3px;left:50%;width:16px;height:16px;top:4px;background:#fff;border:2px solid #17212a;border-radius:3px;box-shadow:0 0 4px #000;transform:translateX(-50%)"></div></div><small>ככל שעוצרים קרוב יותר לאמצע – ההגבהה טובה יותר. Q לעצירה · Z למסירה קצרה</small></div>
+<div class="panel controls">
+<div class="touch">
+<button class="up" data-key="ArrowUp">▲</button><button class="left" data-key="ArrowLeft">◀</button><button class="down" data-key="ArrowDown">▼</button><button class="right" data-key="ArrowRight">▶</button>
+</div>
+<div class="actions">
+<button data-key="KeyZ" id="passBtn" title="לחיצה קצרה: מסירה • לחיצה ארוכה: מסירת עומק">Z מסירה<br><small>החזק למסירת עומק</small></button><button data-key="ShiftLeft">Left Shift בעיטה ⚽</button><button data-key="KeyC" id="sprintBtn" style="background:#7b2cbf;color:white">C ספרינט ⚡</button><button data-key="KeyX">X החלפה</button><button data-key="KeyB">B חטיפה</button><button data-key="KeyG">G גליץ׳</button><button data-key="KeyQ">Q הגבהה</button><button data-key="KeyR">R נגיחה</button>
+</div>
+</div>
+<p class="hint">מקלדת: WASD / חצים לתנועה · Z למסירה (לחיצה ארוכה למסירת עומק) · מחזיקים C יחד עם אחד מכיווני התנועה כדי לרוץ מהר מאוד ⚡ · Left Shift לבעיטה · X להחלפת שחקן · B לחטיפה · G לגליץ׳ · בקרן: Q לעצירת מד ההגבהה ואז R לנגיחה</p>
+</main>
+<aside class="side panel">
+<h3>📋 מצב המשחק</h3><p id="matchInfo">לא התחיל עדיין</p>
+<hr style="border-color:#284653">
+<h3>🎮 פקדים</h3>
+<p>🟡 השחקן בשליטתך מסומן בעיגול צהוב. אפשר גם לבחור בשוער (GK).</p>
+<p>🔵 שחקני הקבוצה שלך</p><p>🔴 היריבים</p>
+<p>מסירה מכוונת לפי כיוון התנועה. השוער יכול להיות יעד למסירה, לצאת מהשער ולעלות קדימה כשהוא בשליטתך.</p>
+<button id="creatorBtn" style="width:100%;background:#7b2cbf;color:white;margin-bottom:8px">🛠️ היוצר שלי – 1,001 צ׳יטים</button><button class="danger" id="reset">⏹ סיים / איפוס</button>
+</aside>
+</div>
+</div>
+<div class="modal hidden" id="rulesModal"><div class="modalbox"><h2>📜 חוקי המשחק והמקשים</h2>
+<ul><li>משחק נגד בוט, עם 11 שחקנים בכל קבוצה.</li><li>WASD או חצים – תנועה.</li><li>Z – לחיצה קצרה למסירה; לחיצה ארוכה למסירת עומק לשטח.</li><li>C – ספרינט מהיר מאוד בזמן שמחזיקים את המקש.</li><li>Left Shift – בעיטה; אם הכדור אצלך, בועטים לכיוון השער היריב.</li><li>X – החלפת שחקן הנשלט, כולל השוער.</li><li>אפשר למסור לשוער, לשלוט בו, לצאת מהשער ולעלות עם הכדור.</li><li>B – חטיפה קרובה.</li><li>G – גליץ׳ קדימה.</li><li>קרן ניתנת אם היריב נגע אחרון והכדור יצא מעבר לקו השער. בקרן שלך: Z למסירה או Q לעצירת מד ההגבהה; R ליד הכדור כדי לנגוח.</li><li>אם הכדור יוצא מעבר לקו השער אחרי נגיעה אחרונה שלך – היריב מקבל כדור שוער. בחוץ, הקבוצה שלא נגעה אחרונה מוציאה חוץ.</li><li>גרסה זו פועלת מקומית בדפדפן. מצב אונליין אמיתי עדיין אינו מחובר לשרת.</li></ul><button id="continue">המשך למשחק</button></div></div>
+<div class="modal hidden" id="creatorModal"><div class="modalbox" id="creatorBox"><div class="row" style="justify-content:space-between"><h2 style="margin:0;color:#d6a6ff">🛠️ היוצר שלי – מרכז הצ׳יטים</h2><button id="closeCreator" class="danger">סגור ✖</button></div><p style="margin:0">1,001 צ׳יטים שונים! בחר צ׳יט מהרשימה כדי להפעיל אותו מיד במשחק. אפשר להפעיל כמה צ׳יטים ברצף!</p><div id="creatorNotice" style="background:#1b3444;border:1px solid #526b7c;border-radius:10px;padding:9px;color:#f4f7fb">💡 פתח משחק, בחר צ׳יט מהרשימה והוא יפעל מיד.</div><div id="creatorTools"><input id="creatorSearch" placeholder="🔎 חפש צ׳יט..."><span id="creatorCount"></span></div><div id="cheatList"></div></div></div>
+<div class="modal hidden" id="endModal"><div class="modalbox"><h2 id="endTitle">המשחק הסתיים!</h2><p id="endText"></p><div id="endChoices" class="actions"></div><button id="again">משחק חדש</button></div></div>
+<script>
+const clubs=[
+["ברצלונה","BAR","#A50044","#004D98"],["ריאל מדריד","RMA","#FEBE10","#1D2951"],["באיירן מינכן","FCB","#DC052D","#0066B2"],["פריז סן ז׳רמן","PSG","#004170","#DA291C"],["יובנטוס","JUV","#111111","#FFFFFF"],["אינטר מילאן","INT","#010E80","#111111"],["AC מילאן","MIL","#FB090B","#111111"],["מנצ׳סטר סיטי","MCI","#6CABDD","#1C2C5B"],["מנצ׳סטר יונייטד","MUN","#DA291C","#FBE122"],["צ׳לסי","CHE","#034694","#FFFFFF"],["טוטנהאם","TOT","#132257","#FFFFFF"],["דורטמונד","BVB","#FDE100","#111111"],["רומא","ROM","#8E1F2F","#F2A900"],["ליברפול","LIV","#C8102E","#00B2A9"],["אתלטיקו מדריד","ATM","#CB3524","#272E61"],["ריאל בטיס","BET","#00954C","#FFFFFF"],["אספניול","ESP","#005DAA","#FFFFFF"],["ארסנל","ARS","#EF0107","#063672"],["ויאריאל","VIL","#FFE114","#005187"],["ולנסיה","VAL","#FF7900","#111111"],["ברייטון","BHA","#0057B8","#FFFFFF"],["קלן","KOE","#FFFFFF","#ED1C24"],["אינטר מיאמי","MIA","#F7B5CD","#111111"]];
+const nationalTeams=[
+["🇦🇷 ארגנטינה","ARG","#75AADB","#FFFFFF"],
+["🇧🇷 ברזיל","BRA","#009739","#FFDF00"],
+["🇫🇷 צרפת","FRA","#0055A4","#EF4135"],
+["🇪🇸 ספרד","ESP","#AA151B","#F1BF00"],
+["🏴 אנגליה","ENG","#FFFFFF","#C8102E"],
+["🇵🇹 פורטוגל","POR","#006600","#FF0000"],
+["🇩🇪 גרמניה","GER","#111111","#DD0000"],
+["🇮🇱 ישראל","ISR","#FFFFFF","#0038B8"],
+["🇮🇹 איטליה","ITA","#009246","#CE2B37"]
+];
+const clubCount=clubs.length;
+clubs.push(...nationalTeams);
+const $=s=>document.querySelector(s),canvas=$("#field"),ctx=canvas.getContext("2d");
+function fillTeamSelect(select){
+ const clubGroup=document.createElement("optgroup");clubGroup.label="מועדונים:";
+ clubs.slice(0,clubCount).forEach((c,i)=>{let o=document.createElement("option");o.value=i;o.textContent=c[0];clubGroup.append(o)});
+ const nationalGroup=document.createElement("optgroup");nationalGroup.label="נבחרות:";
+ nationalTeams.forEach((c,i)=>{let o=document.createElement("option");o.value=clubCount+i;o.textContent=c[0];nationalGroup.append(o)});
+ select.append(clubGroup,nationalGroup);
+}
+fillTeamSelect($("#teamA"));fillTeamSelect($("#teamB"));
+$("#teamA").value=0;$("#teamB").value=clubCount;
+let game=null,keys={},last=0,selected=9;
+const W=2100,H=1275,field={x:60,y:50,w:1980,h:1175};
+const difficulty={easy:{speed:.65,enemySpeed:.65,press:.018,passRate:.35,wait:2200},medium:{speed:.85,enemySpeed:.85,press:.027,passRate:.58,wait:1800},hard:{speed:1,enemySpeed:1,press:.038,passRate:.78,wait:1400},extreme:{speed:1,enemySpeed:1.18,press:.055,passRate:.94,wait:850}};
+function formation(){return [[.08,.5],[.25,.18],[.25,.38],[.25,.62],[.25,.82],[.46,.25],[.46,.5],[.46,.75],[.68,.22],[.68,.5],[.68,.78]]}
+function makeTeam(side,club){return formation().map((pos,i)=>{let x=side==="A"?field.x+pos[0]*field.w:field.x+(1-pos[0])*field.w;return{x,y:field.y+pos[1]*field.h,homeX:x,homeY:field.y+pos[1]*field.h,baseHomeX:x,baseHomeY:field.y+pos[1]*field.h,side,idx:i,keeper:i===0,club,stamina:1}})}
+function start(){let a=+$("#teamA").value,b=+$("#teamB").value;if(a===b){b=(b+1)%clubs.length;$("#teamB").value=b}
+game={A:makeTeam("A",a),B:makeTeam("B",b),ball:{x:W/2,y:H/2,vx:0,vy:0,owner:null,radius:8,lockedUntil:0,lastTouchSide:"A",isShot:false},enemyFrozenUntil:0,enemySlowUntil:0,enemySlowMultiplier:.22,enemyKeeperAwayUntil:0,userKeeperAwayUntil:0,userBoostUntil:0,userBoostMultiplier:2.5,ballMagnetUntil:0,ballMagnetStrength:0,shotBoost:1,scores:[0,0],minutes:+$("#duration").value,elapsed:0,playing:true,paused:0,goalFlash:0,diff:difficulty[$("#difficulty").value],kickoffSide:"A",botWait:0,botPlan:"build",keeperCaught:false,phase:"regular",extraElapsed:0,penaltyA:0,penaltyB:0,penaltyRound:0,teammateSpeed:1,opponentWobble:0,opponentSize:1,teammateSize:1,playerAura:null,ballTrail:null,ballCurve:0,ballGravity:0,ballBounce:.45,shotBoost:1,passBoost:1,timeScale:1,pitchTint:null,weather:null,customColors:null,particles:[],weatherSeed:0};
+selected=9;$("#nameA").textContent=clubs[a][0];$("#nameB").textContent=clubs[b][0];$("#scoreA").textContent="0";$("#scoreB").textContent="0";$("#status").textContent="משחק התחיל";$("#matchInfo").textContent="רמת קושי: "+$("#difficulty").selectedOptions[0].textContent;$("#setup").classList.add("hidden");$("#endModal").classList.add("hidden");last=performance.now();kickoff("A")}
+function reset(){game=null;$("#endModal").classList.add("hidden");$("#setup").classList.remove("hidden");$("#status").textContent="בחר משחק כדי להתחיל";$("#clock").textContent="00:00";draw()}
+function nearest(team,x,y,skipKeeper=false){let best=-1,d=Infinity;team.forEach((p,i)=>{if(skipKeeper&&p.keeper)return;let q=(p.x-x)**2+(p.y-y)**2;if(q<d){d=q;best=i}});return best}
+function controlled(){return game.A[selected]}
+function giveOwner(side,index){if(!game)return;game.ball.crossing=false;game.ball.lastTouchSide=side;game.ball.lockedUntil=0;game.ball.owner={side,index};let p=game[side][index];if(side==="A")selected=index;game.ball.x=p.x+(side==="A"?14:-14);game.ball.y=p.y;game.ball.vx=game.ball.vy=0}
+function kickoff(side){game.ball.x=W/2;game.ball.y=H/2;game.ball.vx=game.ball.vy=0;game.ball.owner=null;game.kickoffSide=side;game.paused=1.4;game.botWait=game.diff.wait/1000;game.A.forEach(p=>{p.homeX=p.baseHomeX;p.homeY=p.baseHomeY;p.x=p.homeX;p.y=p.homeY});game.B.forEach(p=>{p.homeX=p.baseHomeX;p.homeY=p.baseHomeY;p.x=p.homeX;p.y=p.homeY});game.ball.lockedUntil=0;if(side==="A")giveOwner("A",6);else giveOwner("B",6);$("#status").textContent=side==="A"?"הכדור שלך – פתיחת משחק":"פתיחת משחק – היריב מתחיל"}
+function kick(pass=false,through=false){
+if(!game||!game.playing||game.paused>0)return;
+let b=game.ball,o=b.owner;if(!o||o.side!=="A")return;
+let p=game.A[o.index],dx=1,dy=0;
+if(pass){
+ let aimX=(keys.ArrowRight||keys.KeyD?1:0)-(keys.ArrowLeft||keys.KeyA?1:0),
+ aimY=(keys.ArrowDown||keys.KeyS?1:0)-(keys.ArrowUp||keys.KeyW?1:0);
+ if(!aimX&&!aimY)aimX=1;
+ let aimLen=Math.hypot(aimX,aimY);aimX/=aimLen;aimY/=aimLen;
+ let teammates=game.A.filter(q=>q.idx!==p.idx);
+ let target=teammates.map(q=>{
+   let qdx=q.x-p.x,qdy=q.y-p.y,d=Math.hypot(qdx,qdy)||1;
+   let alignment=(qdx/d*aimX+qdy/d*aimY);
+   return {q,qdx,qdy,d,alignment};
+ }).filter(v=>v.d>30&&v.alignment>.05)
+ .sort((u,v)=>(v.alignment*2.5-v.d/500)-(u.alignment*2.5-u.d/500))[0];
+ if(target){
+   if(through){
+     // Aim into the space the receiver is running toward, rather than at their feet.
+     let lead=Math.min(115,Math.max(55,target.d*.32));
+     dx=target.qdx+aimX*lead;dy=target.qdy+aimY*lead;
+   }else{dx=target.qdx;dy=target.qdy}
+ }else{dx=aimX;dy=aimY}
+}else{
+ dx=1;dy=(H/2-p.y)*.003;
+ if(keys.ArrowUp||keys.KeyW)dy=-.35;
+ if(keys.ArrowDown||keys.KeyS)dy=.35
+}
+let len=Math.hypot(dx,dy)||1;dx/=len;dy/=len;
+b.owner=null;if(game.restartType){game.restartType=null;hideCrossMeter();}game.lastTouchSide="A";b.lastTouchSide="A";if(o.side==="A"&&game.A[o.index]?.keeper)game.keeperCaught=false;let power=(pass?(game.passBoost||1):(game.shotBoost||1));b.vx=dx*(pass?(through?7.1:5.3):8.3)*power;b.vy=dy*(pass?(through?7.1:5.3):8.3)*power;game.shotBoost=1;game.passBoost=1;
+b.x=p.x+dx*17;b.y=p.y+dy*17;
+}
+function distance(a,b){return Math.hypot(a.x-b.x,a.y-b.y)}
+function switchPlayer(){
+ if(!game)return;
+ // Cycle through all 11 players so the keeper is always selectable.
+ selected=(selected+1)%game.A.length;
+ $("#status").textContent=selected===0?"🧤 אתה שולט בשוער!":`אתה שולט בשחקן ${selected}`;
+}
+function tackle(slide){if(!game||game.paused>0)return;let p=controlled(),b=game.ball;if(b.owner?.side==="B"){let q=game.B[b.owner.index];if(distance(p,q)<(slide?65:42)){b.owner=null;giveOwner("A",selected)}}else if(!b.owner&&distance(p,b)<(slide?70:45))giveOwner("A",selected)}
+function goal(scoring){
+ game.scores[scoring==="A"?0:1]++;
+ $("#scoreA").textContent=game.scores[0];$("#scoreB").textContent=game.scores[1];
+ if(game.phase==="golden"){endGame(scoring==="A"?"ניצחת ב-GOLDEN GOAL!":"היריבה ניצחה ב-GOLDEN GOAL!");return}
+ $("#status").textContent="⚽ גול!";kickoff(scoring==="A"?"B":"A");game.paused=2.2;game.botWait=game.diff.wait/1000+1.2;
+ $("#status").textContent=`גול לקבוצה ${scoring==="A"?"שלך":"היריבה"}! ${scoring==="A"?"היריב":"אתה"} פותח`;
+}
+function moveToward(p,x,y,speed,step){let dx=x-p.x,dy=y-p.y,d=Math.hypot(dx,dy)||1;let n=Math.min(d,speed*step);p.x+=dx/d*n;p.y+=dy/d*n;p.x=Math.max(field.x+8,Math.min(field.x+field.w-8,p.x));p.y=Math.max(field.y+8,Math.min(field.y+field.h-8,p.y))}
+function nearestIndex(team,x,y,skipKeeper=false){let best=skipKeeper?1:0,dist=Infinity;team.forEach((q,i)=>{if(skipKeeper&&q.keeper)return;const d=(q.x-x)**2+(q.y-y)**2;if(d<dist){dist=d;best=i}});return best}
+function hideCrossMeter(){$("#crossMeter").classList.add("hidden");if(game)game.crossMeterActive=false}
+function beginRestart(type,side,x,y){
+ if(!game)return;const b=game.ball;game.restartType=type;game.restartSide=side;game.crossMeterActive=false;game.crossLocked=false;game.crossElapsed=0;game.autoHeaderAt=0;
+ b.x=x;b.y=y;b.vx=b.vy=0;b.owner=null;b.isShot=false;b.crossing=false;b.lastTouchSide=side;b.lockedUntil=performance.now()+500;
+ let idx=(type==="goalKick")?0:nearestIndex(game[side],x,y,true);let taker=game[side][idx];taker.x=x;taker.y=y;
+ game[side].forEach((q,i)=>{if(i!==idx){q.x=q.baseHomeX;q.y=q.baseHomeY}});
+ giveOwner(side,idx);b.x=x;b.y=y;
+ if(type==="corner"&&side==="A"){
+   game.crossMeterActive=true;game.crossElapsed=0;game.crossMarker=0;$("#crossMeter").classList.remove("hidden");$("#crossLabel").textContent="הגבהה – לחץ Q כדי לעצור קרוב למרכז!";
+ }else hideCrossMeter();
+ if(side==="B"){game.botWait=type==="corner"?0.8:0.7;game.botPlan="build";}
+ const names={corner:"קרן",throwIn:"חוץ",goalKick:"כדור שוער"};
+ $("#status").textContent=(side==="A"?"לך":"ליריבה")+" – "+names[type]+(type==="corner"&&side==="A"?" · Q להגבהה או Z למסירה":"");
+}
+function launchCornerCross(side,quality){
+ const b=game.ball,top=b.y<H/2,dir=side==="A"?-1:1;
+ const tx=side==="A"?field.x+field.w-115:field.x+115;
+ const ty=H/2+(top?115:-115);
+ const dx=tx-b.x,dy=ty-b.y,len=Math.hypot(dx,dy)||1,speed=6.1+quality*2.3;
+ b.owner=null;b.lastTouchSide=side;b.isShot=false;b.crossing=true;b.crossSide=side;b.crossQuality=quality;
+ b.vx=dx/len*speed;b.vy=dy/len*speed;
+ game.restartType=null;game.crossMeterActive=false;game.crossLocked=true;$("#crossMeter").classList.add("hidden");
+ $("#status").textContent=(side==="A"?"הגבהה שלך":"הגבהת היריבה")+" – "+(quality>.82?"מצוינת!":quality>.55?"טובה":"חלשה");
+ if(side==="B")game.autoHeaderAt=performance.now()+900;
+}
+function stopCrossMeter(){if(!game||!game.crossMeterActive)return;const pos=game.crossMarker||0;const quality=Math.max(0,1-Math.abs(pos-.5)*2);launchCornerCross("A",quality);}
+function headerBall(){
+ if(!game||!game.ball.crossing)return false;const b=game.ball,side=b.crossSide||"A",team=game[side];
+ const idx=nearestIndex(team,b.x,b.y,true),player=team[idx];if(!player||distance(player,b)>105)return false;
+ const goalX=side==="A"?field.x+field.w+80:field.x-80,goalY=H/2;
+ let dx=goalX-player.x,dy=goalY-player.y,len=Math.hypot(dx,dy)||1;
+ b.x=player.x;b.y=player.y;b.vx=dx/len*(7+(b.crossQuality||.5)*3);b.vy=dy/len*(7+(b.crossQuality||.5)*3);
+ b.owner=null;b.lastTouchSide=side;b.crossing=false;b.isShot=true;$("#status").textContent=side==="A"?"נגיחה! ⚽":"היריבה נגחה!";return true;
+}
+function handleOutOfBounds(){
+ if(!game)return;const b=game.ball,top=b.y<field.y,bottom=b.y>field.y+field.h;
+ if(top||bottom){const side=b.lastTouchSide==="A"?"B":"A";const y=top?field.y+3:field.y+field.h-3;const x=Math.max(field.x+12,Math.min(field.x+field.w-12,b.x));beginRestart("throwIn",side,x,y);return true;}
+ if(b.x<field.x||b.x>field.x+field.w){
+   const left=b.x<field.x,goalTop=H/2-105,goalBottom=H/2+105;
+   if(b.y>goalTop&&b.y<goalBottom){goal(left?"B":"A");return true;}
+   const defending=left?"A":"B",attacking=left?"B":"A";
+   if(b.lastTouchSide===defending){const y=b.y<H/2?field.y+3:field.y+field.h-3;beginRestart("corner",attacking,left?field.x+3:field.x+field.w-3,y);}
+   else {const x=left?field.x+105:field.x+field.w-105;beginRestart("goalKick",defending,x,H/2);}
+   return true;
+ }
+ return false;
+}
+function update(dt){if(!game||!game.playing)return;let step=dt/16.67*(game.timeScale||1),b=game.ball;if(game.paused>0){game.paused-=dt/1000;return}
+if(game.crossMeterActive){game.crossElapsed=(game.crossElapsed||0)+dt;if(game.crossElapsed>=85){game.crossElapsed=0;game.crossMarker=Math.random();}$("#crossMarker").style.left=(game.crossMarker*100)+"%";}
+let nowFx=performance.now();if(game.ballCurveUntil&&nowFx>game.ballCurveUntil)game.ballCurve=0;if(game.ballGravityUntil&&nowFx>game.ballGravityUntil)game.ballGravity=0;if(game.teammateSpeedUntil&&nowFx>game.teammateSpeedUntil)game.teammateSpeed=1;if(game.opponentWobbleUntil&&nowFx>game.opponentWobbleUntil)game.opponentWobble=0;if(game.timeScaleUntil&&nowFx>game.timeScaleUntil)game.timeScale=1;let p=controlled(),dx=(keys.ArrowRight||keys.KeyD?1:0)-(keys.ArrowLeft||keys.KeyA?1:0),dy=(keys.ArrowDown||keys.KeyS?1:0)-(keys.ArrowUp||keys.KeyW?1:0),len=Math.hypot(dx,dy)||1;
+// כל שחקן, כולל השוער, ניתן לשליטה כשהוא נבחר.
+const boostNow=performance.now()<game.userBoostUntil?(game.userBoostMultiplier||2.5):1;const moveSpeed=(keys.KeyC?10.5:3.5)*boostNow;
+p.x+=dx/len*moveSpeed*step;p.y+=dy/len*moveSpeed*step;
+p.x=Math.max(field.x+8,Math.min(field.x+field.w-8,p.x));
+if(game.restartType==="goalKick"&&game.restartSide==="A")p.x=Math.min(p.x,W/2-10);
+if(game.restartType==="goalKick"&&game.restartSide==="B")p.x=Math.max(p.x,W/2+10);
+p.y=Math.max(field.y+8,Math.min(field.y+field.h-8,p.y));
+if(b.owner){let owner=game[b.owner.side][b.owner.index];b.x=owner.x+(b.owner.side==="A"?14:-14);b.y=owner.y;
+if(b.owner.side==="B"){game.botWait=Math.max(0,game.botWait-dt/1000);let attackGoalX=field.x+field.w*.15,nearestA=nearest(game.A,owner.x,owner.y,true),defender=game.A[nearestA];
+if(defender&&distance(defender,owner)<25){b.owner=null;b.lastTouchSide="A";b.vx=-2.5;b.vy=(Math.random()-.5)*2;game.botPlan="under pressure"}
+else if(game.botWait<=0){let inShootingRange=owner.x<field.x+field.w*.28&&Math.abs(owner.y-H/2)<170;
+if(game.restartType==="corner"){launchCornerCross("B",.68);game.botWait=1.1;}
+else if(inShootingRange){b.owner=null;game.restartType=null;b.lastTouchSide="B";b.vx=-8.0;b.vy=(H/2-b.y)*.025;b.isShot=true;game.botPlan="shoot"}
+else if(game.botPlan==="build"&&Math.random()<game.diff.passRate){let receiver=game.B.filter(q=>!q.keeper&&q.idx!==owner.idx).sort((u,v)=>distance(u,owner)-distance(v,owner))[0];if(receiver){b.owner=null;game.restartType=null;b.lastTouchSide="B";let vx=receiver.x-owner.x,vy=receiver.y-owner.y,l=Math.hypot(vx,vy)||1;b.vx=-Math.abs(vx/l)*5.5;b.vy=vy/l*5.5;game.botPlan="pass";game.botWait=1.2}}
+else {game.botPlan="build";game.botWait=.7;}}}}
+else {b.x+=b.vx*step;b.y+=b.vy*step;b.vx*=.985;b.vy*=.985;b.vy+=(game.ballGravity||0)*step;b.vx+=-(game.ballCurve||0)*b.vy*.012*step;if(performance.now()<(game.ballMagnetUntil||0)){const target=controlled(),dx=target.x-b.x,dy=target.y-b.y,d=Math.hypot(dx,dy)||1,m=game.ballMagnetStrength||.1;b.vx+=dx/d*m*step;b.vy+=dy/d*m*step;}if(Math.hypot(b.vx,b.vy)<.12)b.vx=b.vy=0;
+if(performance.now()>(b.lockedUntil||0))for(let side of ["A","B"]){let tm=game[side],idx=nearest(tm,b.x,b.y,side==="A");if(idx>=0&&distance(tm[idx],b)<(16+Math.max(0,(b.radius||8)-8)*.55)&&Math.hypot(b.vx,b.vy)<4)giveOwner(side,idx)}
+// Keep goalkeepers inside their goal area and never let them drift behind the goal line.
+for(let side of ["A","B"]){let g=game[side][0],gx=side==="A"?field.x+28:field.x+field.w-28,gy=H/2+(b.y-H/2)*.28;const keeperAway=side==="B"?performance.now()<(game.enemyKeeperAwayUntil||0):performance.now()<(game.userKeeperAwayUntil||0);if(!keeperAway){const keeperFactor=side==="B"&&performance.now()<(game.enemyFrozenUntil||0)?0:1;moveToward(g,gx,gy,1.5*keeperFactor,step)}}
+// Physical goalkeeper collision: the ball cannot pass through either keeper.
+for(let side of ["A","B"]){
+ let g=game[side][0],d=distance(b,g),contact=13+(b.radius||8);
+ if(d<contact){
+  b.lastTouchSide=side;
+  // A shot aimed at the keeper's goal may be caught by the existing catch logic.
+  let aimedShot=b.isShot&&((side==="A"&&b.vx<0)||(side==="B"&&b.vx>0))&&Math.abs(b.y-H/2)<100;
+  if(!aimedShot){
+   let nx=(b.x-g.x)/(d||1),ny=(b.y-g.y)/(d||1);
+   b.x=g.x+nx*contact;b.y=g.y+ny*contact;
+   // Bounce away from the keeper with reduced speed instead of clipping through.
+   let dot=b.vx*nx+b.vy*ny;
+   if(dot<0){b.vx-=1.55*dot*nx;b.vy-=1.55*dot*ny}
+   b.vx*=.58;b.vy*=.58;b.isShot=false;
+  }
+ }
+}
+}
+// Record the last team to touch a moving ball, including defenders and goalkeepers.
+if(!b.owner){for(const side of ["A","B"]){for(const q of game[side]){if(distance(q,b)<(q.keeper?23:19))b.lastTouchSide=side;}}}
+// Team A AI: one player presses loose ball; other players keep shape and create passing options.
+game.A.forEach((q,i)=>{if(i===selected||q.keeper)return;let tx=q.homeX+(b.x-W/2)*.18,ty=q.homeY+(b.y-q.homeY)*.12;if(!b.owner&&i===nearest(game.A,b.x,b.y,true)){tx=b.x;ty=b.y}else if(b.owner?.side==="A"){tx=q.homeX+(b.x-W/2)*.22;ty=q.homeY+(b.y-q.homeY)*.16}moveToward(q,tx,ty,2.2*(game.teammateSpeed||1),step);if(!b.owner&&distance(q,b)<20&&Math.hypot(b.vx,b.vy)<3)giveOwner("A",i)});
+// Bot team shape: defenders stay back, midfielders offer passing lanes, attackers move into space.
+// Opponents do not chase while a shot is arriving at the keeper, or while the keeper holds it.
+const shotIncomingToKeeper= !b.owner && b.isShot && b.vx<0 && Math.abs(b.y-H/2)<172 && b.x>field.x+20;
+const keeperCalm=shotIncomingToKeeper;
+game.B.forEach((q,i)=>{if(q.keeper)return;let tx=q.homeX+(b.x-W/2)*.12,ty=q.homeY+(b.y-q.homeY)*.12;
+if(!b.owner&&!keeperCalm&&i===nearest(game.B,b.x,b.y,true)){tx=b.x;ty=b.y}
+if(b.owner?.side==="B"){let carrier=game.B[b.owner.index];if(i===b.owner.index){tx=Math.max(field.x+field.w*.18,carrier.x-60);ty=carrier.y}else if(i>=8){tx=field.x+field.w*.32;ty=H/2+(i-9)*85}else if(i>=5){tx=field.x+field.w*.55;ty=H/2+(i-6)*100}else{tx=field.x+field.w*.72;ty=q.homeY}}
+if(b.owner?.side==="A"&&!keeperCalm&&i===nearest(game.B,b.x,b.y,true)){tx=b.x;ty=b.y}
+if(b.owner?.side==="A"&&!keeperCalm&&i===nearest(game.B,game.A[b.owner.index].x,game.A[b.owner.index].y,true)){tx=game.A[b.owner.index].x;ty=game.A[b.owner.index].y}
+// כשהכדור בדרך לשוער או בידיו: כל היריבים חוזרים לעמדות ולא לוחצים עליו.
+if(keeperCalm){tx=q.homeX;ty=q.homeY}
+const enemyNow=performance.now();const enemyFactor=enemyNow<game.enemyFrozenUntil||enemyNow<(q.freezeUntil||0)?0:(enemyNow<game.enemySlowUntil?(game.enemySlowMultiplier||.22):1);if(game.opponentWobble>0){tx+=Math.sin(enemyNow/130+q.idx)*game.opponentWobble;ty+=Math.cos(enemyNow/145+q.idx*2)*game.opponentWobble;}moveToward(q,tx,ty,2.2*(game.diff.enemySpeed||game.diff.speed)*enemyFactor,step);
+if(!b.owner&&distance(q,b)<19&&Math.hypot(b.vx,b.vy)<4)giveOwner("B",i)});
+// שוער יוצא מהשער כדי לעצור שחקן יריב שנכנס לרחבה.
+if(b.owner){
+ const attackingSide=b.owner.side;
+ const carrier=game[attackingSide][b.owner.index];
+ const defendingSide=attackingSide==="A"?"B":"A";
+ const keeper=game[defendingSide][0];
+ const inOwnBox = attackingSide==="B"
+   ? carrier.x<=field.x+field.w*.23 && Math.abs(carrier.y-H/2)<128
+   : carrier.x>=field.x+field.w*.77 && Math.abs(carrier.y-H/2)<128;
+ if(inOwnBox){
+   // השוער מסתער לעבר נושא הכדור, אך נשאר בתוך גבולות המגרש.
+   const rushFactor=defendingSide==="B"&&performance.now()<(game.enemyFrozenUntil||0)?0:1;
+   moveToward(keeper,carrier.x,carrier.y,3.0*game.diff.speed*rushFactor,step);
+   if(distance(keeper,carrier)<25){
+     giveOwner(defendingSide,0);
+     b.isShot=false;
+     game.botWait=1.1;
+     game.botPlan="build";
+     if(defendingSide==="A")game.keeperCaught=true;
+     $("#status").textContent="🧤 השוער יצא מהשער ותפס את הכדור!";
+   }
+  }else if(!(defendingSide==="B"&&performance.now()<(game.enemyKeeperAwayUntil||0))&&!(defendingSide==="A"&&performance.now()<(game.userKeeperAwayUntil||0))){
+   const homeX=defendingSide==="A"?field.x+28:field.x+field.w-28;
+   moveToward(keeper,homeX,H/2+(b.y-H/2)*.18,2.5,step);
+ }
+}
+// היריבה יכולה ללחוץ ולחטוף משחקן שמחזיק בכדור, אם היא מגיעה ממש קרוב.
+if(b.owner?.side==="A"){
+ let carrier=game.A[b.owner.index];
+ let challenger=game.B.filter(q=>!q.keeper).sort((u,v)=>distance(u,carrier)-distance(v,carrier))[0];
+ let isKeeper=carrier.keeper;
+ if(challenger&&distance(challenger,carrier)<(isKeeper?30:22)&&performance.now()>(carrier.shieldUntil||0)&&Math.random()<(isKeeper?0.12:0.045)*step){
+   giveOwner("B",challenger.idx);
+   game.botWait=0.45;
+   game.botPlan="counter";
+   $("#status").textContent=isKeeper?"היריב לחץ על השוער וחטף את הכדור!":"היריב חטף את הכדור!";
+ }
+}
+// If the keeper loses possession, immediately retreat toward the goal line.
+if(game.A[0].keeper && !(b.owner?.side==="A" && game.A[b.owner.index]?.keeper)){
+ const g=game.A[0];
+ moveToward(g,field.x+28,H/2,3.4*game.diff.speed,step);
+}
+// Goalkeepers catch shots before the ball can cross the goal line.
+if(!b.owner){let gA=game.A[0],gB=game.B[0];
+// Keeper may catch with hands only a shot kicked by the opposing team (not a pass or loose ball).
+if(b.isShot&&b.vx<0&&distance(b,gA)<25&&b.y>H/2-82&&b.y<H/2+82){giveOwner("A",0);b.isShot=false;game.botWait=1.8;game.botPlan="build";game.keeperCaught=true;game.A.forEach(q=>{q.homeX=q.side==="A"?field.x+formation()[q.idx][0]*field.w: q.homeX});game.B.forEach(q=>{q.x=q.x});$("#status").textContent="השוער תפס בעיטה של היריב! כולם חוזרים לעמדות."}
+else if(b.isShot&&b.vx>0&&distance(b,gB)<25&&b.y>H/2-82&&b.y<H/2+82){giveOwner("B",0);b.isShot=false;game.botWait=1.8;game.botPlan="build";game.keeperCaught=false}}
+// Once the keeper has actually caught the incoming shot, opponents are allowed to press him.
+// The calm-return behavior applies only while the shot is travelling toward the keeper.
+// Out of bounds: throw-ins, corners and goal kicks are awarded to the correct team.
+if(!b.owner)handleOutOfBounds();
+// During a goal kick, the restarting team stays in its own half until the ball is played.
+if(game.restartType==="goalKick"&&game.ball.owner){const side=game.restartSide,team=game[side];for(const q of team){if(side==="A")q.x=Math.min(q.x,W/2-10);else q.x=Math.max(q.x,W/2+10)}}
+// Automatic opponent header on a well-timed attacking corner.
+if(b.crossing&&b.crossSide==="B"&&performance.now()>(game.autoHeaderAt||Infinity)){if(!headerBall())game.autoHeaderAt=performance.now()+500;}
+if(game.phase==="regular"){
+ game.elapsed+=dt/1000;let total=game.minutes*60,remain=Math.max(0,total-game.elapsed*(total/120));
+ $("#clock").textContent=String(Math.floor(remain/60)).padStart(2,"0")+":"+String(Math.floor(remain%60)).padStart(2,"0");
+ if(remain<=0){if(game.scores[0]===game.scores[1])showTieChoices();else endGame()}
+ }else if(game.phase==="extra"){
+ game.extraElapsed+=dt/1000;let remain=Math.max(0,300-game.extraElapsed*(300/120));
+ $("#clock").textContent="הארכה "+String(Math.floor(remain/60)).padStart(2,"0")+":"+String(Math.floor(remain%60)).padStart(2,"0");
+ if(remain<=0){if(game.scores[0]===game.scores[1])startPenaltyShootout();else endGame()}
+ }else if(game.phase==="golden"){$("#clock").textContent="GOLDEN GOAL"}
+}
+function showEnd(title,text,buttons=[]){game.playing=false;$("#endTitle").textContent=title;$("#endText").innerHTML=text;const box=$("#endChoices");box.innerHTML="";buttons.forEach(({label,fn})=>{const b=document.createElement("button");b.textContent=label;b.onclick=fn;box.appendChild(b)});$("#again").classList.remove("hidden");$("#endModal").classList.remove("hidden")}
+function endGame(message="שריקת הסיום!"){
+ game.playing=false;let result=game.scores[0]===game.scores[1]?"תיקו":"המנצחת: "+(game.scores[0]>game.scores[1]?$("#nameA").textContent:$("#nameB").textContent);
+ showEnd(message,`תוצאה: ${game.scores[0]} - ${game.scores[1]}
+${result}`);
+}
+function showTieChoices(){
+ game.playing=false;
+ showEnd("תיקו! מה רוצים לעשות?",`התוצאה ${game.scores[0]} - ${game.scores[1]}. בחר איך להכריע את המשחק:`,[
+  {label:"⚡ GOLDEN GOAL",fn:()=>{game.phase="golden";game.playing=true;game.paused=1;$("#endModal").classList.add("hidden");$("#status").textContent="GOLDEN GOAL – הגול הבא מנצח!";$("#clock").textContent="GOLDEN GOAL"}},
+  {label:"⏱️ הארכה – 5 דקות",fn:()=>{game.phase="extra";game.extraElapsed=0;game.playing=true;game.paused=1;$("#endModal").classList.add("hidden");$("#status").textContent="הארכה – עוד 5 דקות!";$("#clock").textContent="הארכה 05:00"}},
+  {label:"🥅 ישר לקרב פנדלים",fn:startPenaltyShootout}
+ ]);
+}
+
+function startPenaltyShootout(){
+ clearInterval(game.penaltyMeterTimer);
+ game.phase="penalties";game.playing=false;
+ game.penaltyA=0;game.penaltyB=0;
+ game.penalty={round:1,stage:"shoot",userGoals:0,oppGoals:0,userShots:0,oppShots:0,userMarks:[],oppMarks:[],sudden:false,aimSide:"right",aimDepth:"inside",meterStart:performance.now()};
+ showPenaltyShoot();
+}
+function penaltyScoreLine(){
+ return `הפנדלים: ${game.penaltyA} - ${game.penaltyB}`;
+}
+function penaltyMarks(arr){
+ return Array.from({length:5},(_,i)=>{
+  const scored=arr[i]===true||arr[i]==="goal";
+  const missed=arr[i]===false||arr[i]==="miss";
+  return `<span style="display:inline-flex;width:23px;height:23px;border-radius:50%;align-items:center;justify-content:center;margin:2px;background:${scored?'#20b85a':missed?'#e34b4b':'#526675'};color:white;font-weight:bold">${scored?'✓':missed?'×':'·'}</span>`;
+ }).join("");
+}
+function penaltyHeader(){
+ const p=game.penalty,roundLabel=p.sudden?`מוות פתאומי – סיבוב ${p.round-5}`:`בעיטה ${p.round} מתוך 5`;
+ return `<div style="font-size:18px;font-weight:bold;margin-bottom:8px">${roundLabel}</div>
+ <div style="font-size:22px;color:#ffd166;font-weight:bold">${penaltyScoreLine()}</div>
+ <div style="margin-top:10px">הבעיטות שלך: ${penaltyMarks(p.userMarks)}</div>
+ <div>הבעיטות של היריב: ${penaltyMarks(p.oppMarks)}</div>`;
+}
+function showPenaltyShoot(){
+ clearInterval(game.penaltyMeterTimer);
+ const p=game.penalty;
+ p.stage="shoot";p.meterStart=performance.now();p.aimSide="right";p.aimDepth="inside";
+ showEnd("⚽ תורך לבעוט!",`${penaltyHeader()}<p>עצור את המד בזמן הנכון ובחר לאיזה צד לבעוט.</p>`);
+ const box=$("#endChoices");
+ box.innerHTML=`
+ <div style="width:100%;text-align:center">
+  <div style="font-weight:bold;margin:8px">מד הבעיטה</div>
+  <div style="position:relative;height:25px;border-radius:9px;overflow:hidden;background:linear-gradient(to right,#e53935 0%,#e53935 25%,#ffad33 25%,#ffad33 38%,#20b85a 38%,#20b85a 62%,#ffad33 62%,#ffad33 75%,#e53935 75%,#e53935 100%);border:2px solid white">
+   <div id="penaltyMarker" style="position:absolute;top:-3px;left:0%;height:30px;width:5px;background:#fff;box-shadow:0 0 5px #000"></div>
+  </div>
+  <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:bold;margin-top:3px"><span style="color:#ff4b4b">אדום – חלש</span><span style="color:#20d66b">ירוק – מצטיין (באמצע)</span><span style="color:#ff4b4b">אדום – חלש</span></div>
+  <div style="margin:12px 0 5px;font-weight:bold">לאיזה צד לבעוט?</div>
+  <div class="actions"><button id="aimLeft" class="secondary">⬅️ שמאל</button><button id="aimRight">ימין ➡️</button></div>
+  <p id="aimSummary">ימין • פנימה</p>
+  <button id="stopMeter" style="width:100%;font-size:18px">🛑 עצור את המד ובעט!</button>
+ </div>`;
+ const setAim=()=>{
+  $("#aimLeft").className=p.aimSide==="left"?"":"secondary";
+  $("#aimRight").className=p.aimSide==="right"?"":"secondary";
+  $("#aimSummary").textContent=(p.aimSide==="right"?"ימין":"שמאל")+" • "+(p.aimDepth==="inside"?"פנימה":"החוצה");
+ };
+ $("#aimLeft").onclick=()=>{p.aimSide="left";setAim()};
+ $("#aimRight").onclick=()=>{p.aimSide="right";setAim()};
+ game.penaltyMeterTimer=setInterval(()=>{
+  if(!game||game.phase!=="penalties"||p.stage!=="shoot")return;
+  let t=(performance.now()-p.meterStart)/1000;
+  let v=(Math.sin(t*2.5)+1)/2;
+  const marker=$("#penaltyMarker");if(marker)marker.style.left=(v*96)+"%";
+ },25);
+ $("#stopMeter").onclick=()=>{
+  clearInterval(game.penaltyMeterTimer);
+  let t=(performance.now()-p.meterStart)/1000;
+  let v=(Math.sin(t*2.5)+1)/2;
+  let quality=(v>=.38&&v<=.62)?"green":(v>=.25&&v<=.75)?"orange":"red";
+  let base=quality==="red"?.05:quality==="orange"?.50:.70;
+  let chance=base+.22;
+  chance=Math.max(.01,Math.min(.98,chance));
+  const goalieGuess=Math.random()<.5?"left":"right";
+  if(goalieGuess===p.aimSide)chance=Math.max(.01,chance-.24);
+  const scored=Math.random()<chance;
+  p.userShots++;p.userGoals+=scored?1:0;p.userMarks.push(scored?"goal":"miss");
+  game.penaltyA=p.userGoals;
+  p.lastShot={quality,scored,chance,side:p.aimSide,depth:p.aimDepth};
+  showPenaltyShotResult();
+ };
+ $("#again").classList.add("hidden");
+}
+function penaltyVisual(side,scored,keeperSide,shooterLabel="בועט"){
+ const targetX=side==="left"?226:284;
+ const keeperX=185;
+ // בהצלה הכדור נעצר בבירור לפני השוער וקו השער, ולא על הראש/בתוך השער
+ const ballEnd=scored?targetX:140;
+ const ballY=scored?48:112;
+ const path=`M 86 119 Q 155 25 ${ballEnd} ${ballY}`;
+ return `<div style="margin:14px auto 8px;max-width:430px;background:#12683f;border:2px solid #d9f3df;border-radius:13px;padding:8px">
+ <div style="font-weight:bold;margin-bottom:4px">🎥 כך נראתה הבעיטה</div>
+ <svg viewBox="0 0 360 155" role="img" aria-label="המחשה של בעיטת פנדל" style="width:100%;display:block">
+ <rect x="195" y="18" width="125" height="92" fill="#ffffff" fill-opacity=".08" stroke="white" stroke-width="5"/>
+ <path d="M205 25 L205 103 M220 25 L220 103 M235 25 L235 103 M250 25 L250 103 M265 25 L265 103 M280 25 L280 103 M295 25 L295 103 M310 25 L310 103 M195 42 H320 M195 62 H320 M195 82 H320" stroke="#ffffff" stroke-opacity=".28" stroke-width="1"/>
+ <circle cx="${keeperX}" cy="70" r="12" fill="#ffd166" stroke="#182b35" stroke-width="2"/><path d="M${keeperX-18} 90 Q${keeperX} 78 ${keeperX+18} 90 L${keeperX+23} 105 L${keeperX-23} 105 Z" fill="#ffd166" stroke="#182b35" stroke-width="2"/><path d="M${keeperX-17} 91 L${keeperX-29} 78 M${keeperX+17} 91 L${keeperX+29} 78" stroke="#ffd166" stroke-width="7" stroke-linecap="round"/>
+ <circle cx="55" cy="94" r="11" fill="#eaf3ff" stroke="#152b35" stroke-width="2"/><path d="M55 106 L55 132 M55 113 L40 124 M55 113 L69 124 M55 132 L43 146 M55 132 L67 146" stroke="#eaf3ff" stroke-width="6" stroke-linecap="round"/>
+ <path d="${path}" fill="none" stroke="#ffe082" stroke-width="3" stroke-dasharray="6 5"/>
+ <circle cx="${ballEnd}" cy="${ballY}" r="8" fill="white" stroke="#17232a" stroke-width="2"/>
+ <text x="55" y="153" fill="white" font-size="11" text-anchor="middle">${shooterLabel}</text><text x="258" y="13" fill="white" font-size="11" text-anchor="middle">השער</text>
+ </svg><div style="font-weight:bold;color:${scored?'#65ef91':'#ff8585'}">${scored?'⚽ הכדור נכנס לרשת!':'🧤 השוער עצר את הכדור!'}</div></div>`;
+}
+function showPenaltyShotResult(){
+ const p=game.penalty,r=p.lastShot;
+ showEnd(r.scored?"🟢 גול!":"🔴 השוער עצר!",`${penaltyHeader()}${penaltyVisual(r.side,r.scored,r.scored?(r.side==="left"?"right":"left"):r.side)}<p>עוצמת הבעיטה: ${r.quality==="red"?"🔴 אדום":r.quality==="orange"?"🟠 כתום":"🟢 ירוק"} • כיוון: ${r.side==="right"?"ימין":"שמאל"} פנימה</p>`,[
+  {label:"המשך – עכשיו אתה השוער 🧤",fn:showPenaltyKeeper}
+ ]);
+ $("#again").classList.add("hidden");
+}
+function showPenaltyKeeper(){
+ clearInterval(game.penaltyMeterTimer);
+ const p=game.penalty;
+ p.stage="keeper";
+ const shotSide=Math.random()<.5?"left":"right";
+ p.opponentShotSide=shotSide;
+ showEnd("🧤 עכשיו אתה השוער!",`${penaltyHeader()}<p>היריב עומד לבעוט! נחש לאיזה צד הוא יבעט וזוז לשם.</p>`,[
+  {label:"⬅️ לזוז שמאלה",fn:()=>resolveKeeperGuess("left")},
+  {label:"לעמוד באמצע",fn:()=>resolveKeeperGuess("center")},
+  {label:"לזוז ימינה ➡️",fn:()=>resolveKeeperGuess("right")}
+ ]);
+ $("#again").classList.add("hidden");
+}
+function resolveKeeperGuess(guess){
+ const p=game.penalty,shot=p.opponentShotSide;
+ const saved=guess===shot;
+ p.oppShots++;p.oppGoals+=saved?0:1;p.oppMarks.push(saved?"miss":"goal");
+ game.penaltyB=p.oppGoals;
+ showEnd(saved?"🧤 הצלה ענקית!":"🔴 היריב הבקיע!",`${penaltyHeader()}${penaltyVisual(shot,!saved,guess==="center"?(shot==="left"?"right":"left"):guess,"היריב")}<p>היריב בעט ${shot==="left"?"שמאלה":"ימינה"} ואתה ${guess==="left"?"זזת שמאלה":guess==="right"?"זזת ימינה":"נשארת באמצע"}.</p>`,[
+  {label:"המשך לסיבוב הבא ⚽",fn:nextPenaltyRound}
+ ]);
+ $("#again").classList.add("hidden");
+}
+function nextPenaltyRound(){
+ const p=game.penalty;
+ if(p.round>=5&&p.userGoals!==p.oppGoals){
+  finishPenalties();return;
+ }
+ if(p.round>=5&&p.userGoals===p.oppGoals)p.sudden=true;
+ p.round++;
+ showPenaltyShoot();
+}
+function finishPenalties(){
+ clearInterval(game.penaltyMeterTimer);
+ const won=game.penalty.userGoals>game.penalty.oppGoals;
+ showEnd(won?"🏆 ניצחת בקרב הפנדלים!":"הפסדת בקרב הפנדלים",`תוצאה במשחק: ${game.scores[0]} - ${game.scores[1]}<br>${penaltyScoreLine()}`);
+ $("#again").classList.remove("hidden");
+}
+// 500 הצ׳יטים המקוריים נשמרו. כאן מתווספות עוד 500 אפשרויות חדשות.
+// עם שמות והשפעות ייחודיים (1,000 צ׳יטים, בלי כותרות "דרגה 1/10").
+function creatorBallFree(x,y,vx=0,vy=0,shot=false,lockMs=0){
+ const b=game.ball;b.owner=null;b.x=Math.max(field.x+10,Math.min(field.x+field.w-10,x));b.y=Math.max(field.y+10,Math.min(field.y+field.h-10,y));b.vx=vx;b.vy=vy;b.isShot=shot;b.lockedUntil=performance.now()+lockMs;
+}
+function creatorShot(vx,vy,power=1){
+ const p=controlled(),len=Math.hypot(vx,vy)||1;creatorBallFree(p.x+vx/len*18,p.y+vy/len*18,vx*power,vy*power,true);
+}
+function creatorSetScore(){ $('#scoreA').textContent=game.scores[0];$('#scoreB').textContent=game.scores[1]; }
+function creatorRestoreTeam(team){team.forEach(p=>{p.homeX=p.baseHomeX;p.homeY=p.baseHomeY;p.x=p.baseHomeX;p.y=p.baseHomeY;});}
+function clampField(x,y){return{x:Math.max(field.x+12,Math.min(field.x+field.w-12,x)),y:Math.max(field.y+12,Math.min(field.y+field.h-12,y))}}
+const cheatCatalog=[];
+function addCheatFamily(category,make){for(let i=0;i<25;i++){const spec=make(i);cheatCatalog.push({cat:category,name:spec.name,run:spec.run,id:cheatCatalog.length+1});}}
+const gridPoint=i=>{const col=i%5,row=Math.floor(i/5);return{x:field.x+field.w*(.1+col*.2),y:field.y+field.h*(.1+row*.2)}};
+
+// 001–025: שינויי גודל כדור. #015 מגדיל אותו מאוד, כך שרואים מיד שהצ׳יט פועל.
+addCheatFamily('כדור – גדלים',i=>{const radius=10+i*2;return{name:`כדור בגודל ${radius}`,run:()=>{game.ball.radius=radius;game.ball.sizeCheatUntil=performance.now()+120000;}}});
+// 026–050: מהירות השחקן הנשלט – 25 מהירויות שונות.
+addCheatFamily('השחקן שלך – מהירות',i=>{const mult=+(1.5+i*.25).toFixed(2);return{name:`מהירות שחקן ×${mult}`,run:()=>{game.userBoostMultiplier=mult;game.userBoostUntil=performance.now()+30000;}}});
+// 051–075: משכי ספרינט שונים.
+addCheatFamily('השחקן שלך – משך ספרינט',i=>{const sec=5+i*5;return{name:`ספרינט למשך ${sec} שניות`,run:()=>{game.userBoostMultiplier=3;game.userBoostUntil=performance.now()+sec*1000;}}});
+// 076–100: 25 עוצמות האטה שונות ליריבה.
+addCheatFamily('יריבים – האטה',i=>{const mult=+(0.9-i*.025).toFixed(3);return{name:`מהירות היריבים ×${mult}`,run:()=>{game.enemySlowMultiplier=mult;game.enemySlowUntil=performance.now()+30000;}}});
+// 101–125: הקפאת היריבים למשכים שונים.
+addCheatFamily('יריבים – הקפאה',i=>{const sec=2+i*2;return{name:`הקפא יריבים ל-${sec} שניות`,run:()=>{game.enemyFrozenUntil=performance.now()+sec*1000;}}});
+// 126–150: שיגור השחקן הנשלט ל-25 מקומות שונים במגרש.
+addCheatFamily('השחקן שלך – טלפורט',i=>{const p=gridPoint(i);return{name:`טלפורט לשחקן שלך: נקודה ${i+1}`,run:()=>{const q=controlled(),v=clampField(p.x,p.y);q.x=v.x;q.y=v.y;}}});
+// 151–175: העברת הכדור ל-25 מקומות שונים.
+addCheatFamily('כדור – מיקום',i=>{const p=gridPoint(i);return{name:`העבר כדור לנקודה ${i+1}`,run:()=>creatorBallFree(p.x,p.y)};});
+// 176–200: שיגור הכדור ב-25 כיוונים שונים.
+addCheatFamily('כדור – שיגור לכיוונים',i=>{const angle=(Math.PI*2*i)/25,speed=8+i*.6;return{name:`שגר כדור לכיוון ${Math.round(i*360/25)}°`,run:()=>{const p=controlled();creatorBallFree(p.x,p.y,Math.cos(angle)*speed,Math.sin(angle)*speed,true);}}});
+// 201–225: בעיטות לשער/לכיוונים שונים ובעוצמות שונות.
+addCheatFamily('בעיטות – עוצמות וכיוונים',i=>{const angle=-.7+i*.058,power=8+i*.8;return{name:`בעיטה מיוחדת ${i+1} – כוח ${power.toFixed(1)}`,run:()=>creatorShot(Math.cos(angle),Math.sin(angle),power)};});
+// 226–250: הזזת שחקני היריבה השונים למקומות ייחודיים.
+addCheatFamily('יריבים – הזזת שחקנים',i=>{const p=gridPoint(i),idx=i%10+1;return{name:`העבר יריב ${idx} לנקודה ${i+1}`,run:()=>{const q=game.B[idx],v=clampField(p.x,p.y);q.x=v.x;q.y=v.y;q.homeX=v.x;q.homeY=v.y;}}});
+// 251–275: 25 צורות שונות לקבוצה שלך.
+addCheatFamily('הקבוצה שלך – מערכים',i=>{const spread=20+i*3,shift=(i-12)*7;return{name:`סדר את הקבוצה שלך במערך ${i+1}`,run:()=>{game.A.forEach((p,n)=>{const v=clampField(field.x+field.w*(.12+(n%4)*.18)+shift, H/2+(n-5)*spread);p.x=v.x;p.y=v.y;p.homeX=v.x;p.homeY=v.y;});}}});
+// 276–300: 25 צורות שונות לקבוצת היריבה.
+addCheatFamily('היריבה – מערכים',i=>{const spread=18+i*3,shift=(i-12)*7;return{name:`שנה ליריבה את המערך ${i+1}`,run:()=>{game.B.forEach((p,n)=>{const v=clampField(field.x+field.w*(.88-(n%4)*.18)+shift,H/2+(n-5)*spread);p.x=v.x;p.y=v.y;p.homeX=v.x;p.homeY=v.y;});}}});
+// 301–325: הוספת מספר שונה של שערים.
+addCheatFamily('תוצאה – שערים לך',i=>{const n=i+1;return{name:`הוסף ${n} שערים לקבוצה שלך`,run:()=>{game.scores[0]=Math.min(99,game.scores[0]+n);creatorSetScore();}}});
+// 326–350: הוספת שערים ליריבה (לבדיקה או לאתגר).
+addCheatFamily('תוצאה – שערים ליריבה',i=>{const n=i+1;return{name:`הוסף ${n} שערים ליריבה`,run:()=>{game.scores[1]=Math.min(99,game.scores[1]+n);creatorSetScore();}}});
+// 351–375: קביעת יתרון שונה לקבוצה שלך.
+addCheatFamily('תוצאה – יתרון',i=>{const lead=i+1;return{name:`קבע יתרון של ${lead} שערים`,run:()=>{game.scores[0]=Math.min(99,game.scores[1]+lead);creatorSetScore();}}});
+// 376–400: הוספת זמן משחק.
+addCheatFamily('שעון – תוספת זמן',i=>{const mins=i+1;return{name:`הוסף ${mins} דקות למשחק`,run:()=>{game.minutes=Math.min(180,game.minutes+mins);$('#clock').textContent='+'+mins+' דקות';}}});
+// 401–425: מגנט כדור בעוצמות שונות, נמשך לשחקן שבשליטתך.
+addCheatFamily('כדור – מגנט',i=>{const strength=+(0.08+i*.035).toFixed(3);return{name:`מגנט כדור בעוצמה ${strength}`,run:()=>{game.ballMagnetStrength=strength;game.ballMagnetUntil=performance.now()+30000;}}});
+// 426–450: הקפאת הכדור למשכים שונים.
+addCheatFamily('כדור – הקפאה',i=>{const sec=1+i*2;return{name:`הקפא את הכדור ל-${sec} שניות`,run:()=>creatorBallFree(game.ball.x,game.ball.y,0,0,false,sec*1000)};});
+// 451–475: הזזת שוער היריבה למיקומים שונים.
+addCheatFamily('שוער היריבה – מיקום',i=>{const x=field.x+field.w*(.55+i*.015),y=field.y+field.h*(.1+(i%5)*.2);return{name:`העבר את שוער היריבה למיקום ${i+1}`,run:()=>{const g=game.B[0],v=clampField(x,y);g.x=v.x;g.y=v.y;game.enemyKeeperAwayUntil=performance.now()+30000;}}});
+// 476–500: הזזת השוער שלך למיקומים שונים.
+addCheatFamily('השוער שלך – מיקום',i=>{const x=field.x+field.w*(.1+i*.015),y=field.y+field.h*(.1+(i%5)*.2);return{name:`העבר את השוער שלך למיקום ${i+1}`,run:()=>{const g=game.A[0],v=clampField(x,y);g.x=v.x;g.y=v.y;game.userKeeperAwayUntil=performance.now()+30000;selected=0;}}});
+
+// 501–1000: חבילת הרחבה חדשה עם 20 מערכות משחק שונות, 25 דרגות/בחירות לכל מערכת.
+const extraPalette=['#ff4d6d','#ff7b00','#ffd166','#80ed99','#00b4d8','#4361ee','#7209b7','#f72585','#06d6a0','#f4a261','#e9c46a','#90be6d','#577590','#f94144','#277da1','#b5179e','#4895ef','#43aa8b','#f8961e','#9b5de5','#00bbf9','#fee440','#00f5d4','#ff006e','#8338ec'];
+const pitchPalette=['#167447','#146b9a','#6b8e23','#6a4c93','#b56576','#355070','#2a9d8f','#bc6c25','#386641','#577590','#7f4f24','#264653','#588157','#3d405b','#8d5a97','#006d77','#9c6644','#4f772d','#5f0f40','#0b525b','#6c584c','#283618','#774936','#38618c','#5c677d'];
+// 501–525: מגן אישי – חסינות מחטיפות לזמנים שונים.
+addCheatFamily('מגן אישי – חסינות',i=>{const sec=5+(i*5);return{name:`מגן אישי: חסינות ל-${sec} שניות`,run:()=>{controlled().shieldUntil=performance.now()+sec*1000;}}});
+// 526–550: הילות צבע שונות לשחקן הנבחר.
+addCheatFamily('אפקטים – הילה לשחקן',i=>{const color=extraPalette[i];return{name:`הילה לשחקן בצבע ${color}`,run:()=>{game.playerAura=color;}}});
+// 551–575: שבילי כדור בצבעים שונים.
+addCheatFamily('אפקטים – שובל כדור',i=>{const color=extraPalette[(i*7)%25];return{name:`שובל כדור זוהר ${i+1} (${color})`,run:()=>{game.ballTrail=color;}}});
+// 576–600: עקומת כדור – 25 עוצמות וכיווני סיבוב.
+addCheatFamily('כדור – בעיטה מסובבת',i=>{const curve=+(i<12?-(i+1)*.08:(i-10)*.08).toFixed(2);return{name:`סיבוב כדור ${curve>0?'ימינה':'שמאלה'} בעוצמה ${Math.abs(curve).toFixed(2)}`,run:()=>{game.ballCurve=curve;game.ballCurveUntil=performance.now()+45000;}}});
+// 601–625: כבידה לכדור – ציפה או משיכה למטה.
+addCheatFamily('כדור – כבידה',i=>{const gravity=+(-.22+i*.018).toFixed(3);return{name:`כבידה לכדור ${gravity>0?'למטה':'למעלה'} ${Math.abs(gravity).toFixed(3)}`,run:()=>{game.ballGravity=gravity;game.ballGravityUntil=performance.now()+45000;}}});
+// 626–650: קפיציות שונה של הכדור מהקווים.
+addCheatFamily('כדור – קפיציות',i=>{const bounce=+(0.12+i*.035).toFixed(3);return{name:`כדור קופצני – החזר ${bounce}`,run:()=>{game.ballBounce=bounce;}}});
+// 651–675: בוסט לבעיטה הבאה בעוצמות שונות.
+addCheatFamily('בעיטה – כוח חד-פעמי',i=>{const power=+(1.25+i*.2).toFixed(2);return{name:`בעיטת על – כוח ×${power}`,run:()=>{game.shotBoost=power;}}});
+// 676–700: בוסט למסירה הבאה.
+addCheatFamily('מסירה – כוח חד-פעמי',i=>{const power=+(1.2+i*.16).toFixed(2);return{name:`מסירת טיל – כוח ×${power}`,run:()=>{game.passBoost=power;}}});
+// 701–725: חיזוק מהירות לחברי הקבוצה.
+addCheatFamily('הקבוצה שלך – מהירות קבוצתית',i=>{const mult=+(1.15+i*.07).toFixed(2);return{name:`האץ את חברי הקבוצה ×${mult}`,run:()=>{game.teammateSpeed=mult;game.teammateSpeedUntil=performance.now()+60000;}}});
+// 726–750: תנועת הטעיה/בלבול של היריבים.
+addCheatFamily('יריבים – בלבול תנועה',i=>{const amount=8+i*4;return{name:`בלבל את היריבים – סטייה ${amount}`,run:()=>{game.opponentWobble=amount;game.opponentWobbleUntil=performance.now()+45000;}}});
+// 751–775: הקטנת היריבים בגדלים שונים.
+addCheatFamily('יריבים – הקטנה',i=>{const scale=+(0.9-i*.025).toFixed(3);return{name:`הקטן יריבים לגודל ×${scale}`,run:()=>{game.opponentSize=scale;}}});
+// 776–800: הגדלת חברי הקבוצה בגדלים שונים.
+addCheatFamily('הקבוצה שלך – הגדלה',i=>{const scale=+(1.1+i*.045).toFixed(3);return{name:`הגדל את הקבוצה לגודל ×${scale}`,run:()=>{game.teammateSize=scale;}}});
+// 801–825: טלפורט לשחקן מסוים בקבוצה שלך אל אזורים שונים.
+addCheatFamily('הקבוצה שלך – חילוץ שחקנים',i=>{const idx=(i%10)+1,pt=gridPoint((i*3+7)%25);return{name:`חלץ את שחקן ${idx} לנקודה ${((i*3+7)%25)+1}`,run:()=>{const q=game.A[idx],v=clampField(pt.x,pt.y);q.x=v.x;q.y=v.y;q.homeX=v.x;q.homeY=v.y;}}});
+// 826–850: הקפאת שחקן יריב בודד לזמנים שונים.
+addCheatFamily('יריבים – הקפאת שחקן יחיד',i=>{const idx=(i%10)+1,sec=3+i*2;return{name:`הקפא את יריב ${idx} ל-${sec} שניות`,run:()=>{game.B[idx].freezeUntil=performance.now()+sec*1000;}}});
+// 851–875: החלפת צבעי החולצות של הקבוצות.
+addCheatFamily('תלבושות – צבע הקבוצה שלך',i=>{const color=extraPalette[(i*3)%25];return{name:`תלבושת חדשה לקבוצה שלך ${color}`,run:()=>{game.customColors=game.customColors||{};game.customColors.A=color;}}});
+// 876–900: צבעי מגרש שונים.
+addCheatFamily('מגרש – צבע דשא',i=>{const color=pitchPalette[i];return{name:`החלף את צבע המגרש ${i+1}`,run:()=>{game.pitchTint=color;}}});
+// 901–925: גשם בעוצמות שונות.
+addCheatFamily('מזג אוויר – גשם',i=>{const amount=5+i*3;return{name:`הפעל גשם בעוצמה ${amount}`,run:()=>{game.weather={type:'rain',amount};}}});
+// 926–950: שלג בעוצמות שונות.
+addCheatFamily('מזג אוויר – שלג',i=>{const amount=5+i*3;return{name:`הפעל שלג בעוצמה ${amount}`,run:()=>{game.weather={type:'snow',amount};}}});
+// 951–975: פיצוץ קונפטי בצבעים/כמויות שונות.
+addCheatFamily('חגיגה – פיצוץ קונפטי',i=>{const count=20+i*8,color=extraPalette[i];return{name:`פיצוץ קונפטי ${count} חלקיקים`,run:()=>{const now=performance.now();for(let n=0;n<count;n++){const a=Math.random()*Math.PI*2,v=1+Math.random()*5;game.particles.push({x:W/2,y:H/2,vx:Math.cos(a)*v,vy:Math.sin(a)*v-2,size:2+(n%4),color,life:4500,until:now+4500})}}};});
+// 976–1000: האטה/האצה של קצב המשחק.
+addCheatFamily('זמן – קצב המשחק',i=>{const scale=+(0.4+i*.07).toFixed(2);return{name:`שנה קצב משחק ×${scale}`,run:()=>{game.timeScale=scale;game.timeScaleUntil=performance.now()+60000;}}});
+
+// 1001: ניצחון טכני לקבוצה שלך – קובע תוצאה 3:0 ומסיים מיד את המשחק.
+cheatCatalog.push({id:1001,cat:'תוצאה – ניצחון טכני',name:'ניצחון טכני – ניצחון מיידי 3:0',run:()=>{game.scores[0]=3;game.scores[1]=0;creatorSetScore();$('#creatorModal').classList.add('hidden');endGame('🏆 ניצחון טכני!');}});
+
+const allCheats=cheatCatalog;
+function renderCheats(){
+ const query=($('#creatorSearch').value||'').trim().toLowerCase();
+ const list=allCheats.filter(c=>(c.name+' '+c.cat+' '+String(c.id)).toLowerCase().includes(query));
+ $('#creatorCount').textContent=`מוצגים ${list.length} מתוך ${allCheats.length} צ׳יטים שונים (500 מקוריים + 500 חדשים + ניצחון טכני)`;
+ $('#cheatList').innerHTML='';
+ list.forEach(c=>{
+  const b=document.createElement('button');b.type='button';b.textContent=`#${String(c.id).padStart(3,'0')} · ${c.name}`;b.title=c.cat;
+  b.addEventListener('click',()=>{
+   if(!game){$('#creatorNotice').textContent='⚠️ צריך להתחיל משחק לפני הפעלת צ׳יטים.';return;}
+   try{c.run();$('#creatorNotice').textContent=`✅ צ׳יט #${String(c.id).padStart(3,'0')} הופעל: ${c.name}`;$('#status').textContent=`🛠️ צ׳יט #${String(c.id).padStart(3,'0')}: ${c.name}`;}
+   catch(e){console.error('Cheat failed:',c.id,c.name,e);$('#creatorNotice').textContent=`⚠️ צ׳יט #${String(c.id).padStart(3,'0')} נכשל. אפשר לנסות שוב אחרי התחלת משחק חדש.`;}
+  });$('#cheatList').appendChild(b);
+ });
+}
+$('#creatorBtn').addEventListener('click',()=>{$('#creatorModal').classList.remove('hidden');$('#creatorNotice').textContent=game?'בחר צ׳יט מהרשימה והוא יופעל מיד!':'💡 הרשימה פתוחה. התחל משחק, ואז לחץ על צ׳יט כדי להפעיל אותו.';renderCheats();});
+$('#closeCreator').onclick=()=>$('#creatorModal').classList.add('hidden');
+$('#creatorSearch').addEventListener('input',renderCheats);
+function shadeHex(hex,delta){try{let n=parseInt(hex.slice(1),16),r=Math.max(0,Math.min(255,(n>>16)+delta)),g=Math.max(0,Math.min(255,((n>>8)&255)+delta)),b=Math.max(0,Math.min(255,(n&255)+delta));return "#"+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1)}catch(e){return hex}}
+function draw(){ctx.clearRect(0,0,W,H);ctx.fillStyle=(game&&game.pitchTint)||"#16804b";ctx.fillRect(0,0,W,H);for(let i=0;i<10;i++){ctx.fillStyle=(game&&game.pitchTint)?(i%2?game.pitchTint:shadeHex(game.pitchTint,-12)):(i%2?"#137343":"#16804b");ctx.fillRect(field.x+i*field.w/10,field.y,field.w/10,field.h)}
+ctx.strokeStyle="#fff";ctx.lineWidth=4;ctx.strokeRect(field.x,field.y,field.w,field.h);ctx.beginPath();ctx.moveTo(W/2,field.y);ctx.lineTo(W/2,field.y+field.h);ctx.stroke();ctx.beginPath();ctx.arc(W/2,H/2,112.5,0,Math.PI*2);ctx.stroke();ctx.fillStyle="#fff";ctx.fillRect(field.x-22.5,H/2-105,22.5,210);ctx.fillRect(field.x+field.w,H/2-105,22.5,210);ctx.strokeRect(field.x,H/2-210,180,420);ctx.strokeRect(field.x+field.w-180,H/2-210,180,420);ctx.strokeRect(field.x,H/2-105,75,210);ctx.strokeRect(field.x+field.w-75,H/2-105,75,210);
+if(game){for(let side of ["A","B"])game[side].forEach((p,i)=>{let color=(game.customColors&&game.customColors[side])||clubs[p.club][2];const scale=(side==="A"?(game.teammateSize||1):(game.opponentSize||1));ctx.globalAlpha=performance.now()<(p.invisibleUntil||0)?.22:1;ctx.fillStyle=color;if(side==="A"&&performance.now()<(p.shieldUntil||0)){ctx.shadowColor="#65e8ff";ctx.shadowBlur=18;}if(side==="A"&&game.playerAura){ctx.shadowColor=game.playerAura;ctx.shadowBlur=20;}ctx.beginPath();ctx.arc(p.x,p.y,(p.keeper?13:11)*scale,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;ctx.globalAlpha=1;ctx.strokeStyle="#fff";ctx.lineWidth=2;ctx.stroke();ctx.fillStyle=["#FFFFFF","#FDE100","#FEBE10"].includes(color)?"#111":"#fff";ctx.font="bold 11px Arial";ctx.textAlign="center";ctx.fillText(i===0?"GK":i,p.x,p.y+4);if(side==="A"&&i===selected){ctx.strokeStyle="#ffd166";ctx.lineWidth=4;ctx.beginPath();ctx.arc(p.x,p.y,18,0,Math.PI*2);ctx.stroke();ctx.fillStyle="#ffd166";ctx.font="bold 14px Arial";ctx.fillText("▼",p.x,p.y-23);if(p.keeper){ctx.fillStyle="#ffd166";ctx.font="bold 12px Arial";ctx.fillText("🧤",p.x,p.y-38)}}});if(game.ballTrail){ctx.save();ctx.globalAlpha=.28;ctx.fillStyle=game.ballTrail;for(let k=1;k<=6;k++){ctx.beginPath();ctx.arc(game.ball.x-game.ball.vx*k*1.8,game.ball.y-game.ball.vy*k*1.8,Math.max(2,(game.ball.radius||8)*(1-k*.12)),0,Math.PI*2);ctx.fill()}ctx.restore()}ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(game.ball.x,game.ball.y,game.ball.radius||8,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#222";ctx.stroke();if(game.weather){ctx.save();ctx.strokeStyle=game.weather.type==="rain"?"#b8e8ff":"#ffffff";ctx.fillStyle="#fff";for(let n=0;n<game.weather.amount;n++){let x=(n*137+performance.now()*.08)%W,y=(n*83+performance.now()*(game.weather.type==="rain"? .35:.08))%H;if(game.weather.type==="rain"){ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x-5,y+12);ctx.stroke()}else{ctx.globalAlpha=.7;ctx.beginPath();ctx.arc(x,y,2+(n%3),0,Math.PI*2);ctx.fill()}}ctx.restore()}if(game.particles&&game.particles.length){game.particles=game.particles.filter(z=>z.until>performance.now());game.particles.forEach(z=>{ctx.globalAlpha=Math.max(0,(z.until-performance.now())/z.life);ctx.fillStyle=z.color;ctx.beginPath();ctx.arc(z.x,z.y,z.size,0,Math.PI*2);ctx.fill();z.x+=z.vx;z.y+=z.vy;z.vy+=.025});ctx.globalAlpha=1}}else{ctx.fillStyle="#fff";ctx.font="28px Arial";ctx.textAlign="center";ctx.fillText("לחץ על המגרש כדי להתחיל!",W/2,H/2)}}
+function loop(t){let dt=Math.min(50,t-last||16);last=t;update(dt);draw();requestAnimationFrame(loop)}requestAnimationFrame(loop);
+let zDownAt=0,zHandled=false;
+window.addEventListener("keydown",e=>{
+ if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight","Space","ShiftLeft"].includes(e.code))e.preventDefault();
+ keys[e.code]=true;if(e.repeat)return;
+ if(e.code==="KeyZ"){zDownAt=performance.now();zHandled=false}
+ if(e.code==="ShiftLeft")kick(false);
+ if(e.code==="KeyX")switchPlayer();
+ if(e.code==="KeyB")tackle(false);
+ if(e.code==="KeyG")tackle(true);
+ if(e.code==="KeyQ"&&game?.crossMeterActive)stopCrossMeter();
+ if(e.code==="KeyR")headerBall()
+});
+window.addEventListener("keyup",e=>{
+ keys[e.code]=false;
+ if(e.code==="KeyZ"&&zDownAt){let held=performance.now()-zDownAt;kick(true,held>=380);zDownAt=0;zHandled=true}
+});
+document.querySelectorAll("[data-key]").forEach(btn=>{
+ let code=btn.dataset.key,pressAt=0;
+ btn.addEventListener("pointerdown",e=>{e.preventDefault();keys[code]=true;pressAt=performance.now();
+   if(code==="ShiftLeft")kick(false);if(code==="KeyX")switchPlayer();if(code==="KeyB")tackle(false);if(code==="KeyG")tackle(true);if(code==="KeyQ"&&game?.crossMeterActive)stopCrossMeter();if(code==="KeyR")headerBall()
+ });
+ const release=()=>{keys[code]=false;if(code==="KeyZ"&&pressAt){kick(true,performance.now()-pressAt>=380);pressAt=0}};
+ ["pointerup","pointerleave","pointercancel"].forEach(ev=>btn.addEventListener(ev,release))
+});
+$("#field").style.cursor="pointer";$("#field").onclick=()=>{if(!game)start()};$("#reset").onclick=reset;$("#again").onclick=()=>{$("#endModal").classList.add("hidden");reset()};$("#rulesBtn").onclick=()=>$("#rulesModal").classList.remove("hidden");$("#continue").onclick=()=>$("#rulesModal").classList.add("hidden");
+</script>
+</body>
+</html>
