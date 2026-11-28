@@ -36,6 +36,7 @@ small,.hint{color:#b7cbd7}.controls{display:flex;gap:8px;justify-content:center;
 <label>משך המשחק<select id="duration"><option value="5">5 דקות</option><option value="10" selected>10 דקות</option><option value="15">15 דקות</option><option value="20">20 דקות</option><option value="25">25 דקות</option><option value="30">30 דקות</option></select></label>
 </div>
 <small>בגרסה זו משחקים נגד בוט. מולטיפלייר בין מכשירים דורש שרת.</small>
+<button id="bySoccerModeBtn" style="margin-top:12px;width:100%;background:linear-gradient(90deg,#7b2cbf,#d62828);color:white;font-weight:bold;font-size:18px">👑 THE BY SOCCER WIN MODE</button>
 </section>
 <div class="gamegrid">
 <main>
@@ -44,6 +45,7 @@ small,.hint{color:#b7cbd7}.controls{display:flex;gap:8px;justify-content:center;
 <canvas id="field" width="2100" height="1275"></canvas>
 <div id="crossMeter" class="hidden" style="margin:8px auto;max-width:620px;background:#10232e;border:1px solid #456173;border-radius:12px;padding:10px;text-align:center"><strong id="crossLabel">הגבהה – לחץ Q כדי לעצור במרכז!</strong><div style="position:relative;height:24px;background:linear-gradient(90deg,#d62828 0%,#f4a261 25%,#2a9d55 50%,#f4a261 75%,#d62828 100%);border-radius:7px;margin-top:8px;overflow:hidden"><div id="crossMarker" style="position:absolute;top:-3px;left:50%;width:16px;height:16px;top:4px;background:#fff;border:2px solid #17212a;border-radius:3px;box-shadow:0 0 4px #000;transform:translateX(-50%)"></div></div><small>ככל שעוצרים קרוב יותר לאמצע – ההגבהה טובה יותר. Q לעצירה · Z למסירה קצרה</small></div>
 <div class="panel controls">
+<button id="bySoccerModeInGameBtn" style="width:100%;background:linear-gradient(90deg,#7b2cbf,#d62828);color:white;font-weight:bold;font-size:17px">👑 THE BY SOCCER WIN MODE – פתיחה תוך כדי משחק</button>
 <div class="touch">
 <button class="up" data-key="ArrowUp">▲</button><button class="left" data-key="ArrowLeft">◀</button><button class="down" data-key="ArrowDown">▼</button><button class="right" data-key="ArrowRight">▶</button>
 </div>
@@ -65,8 +67,14 @@ small,.hint{color:#b7cbd7}.controls{display:flex;gap:8px;justify-content:center;
 </div>
 </div>
 <div class="modal hidden" id="rulesModal"><div class="modalbox"><h2>📜 חוקי המשחק והמקשים</h2>
-<ul><li>משחק נגד בוט, עם 11 שחקנים בכל קבוצה.</li><li>WASD או חצים – תנועה.</li><li>Z – לחיצה קצרה למסירה; לחיצה ארוכה למסירת עומק לשטח.</li><li>C – ספרינט מהיר מאוד בזמן שמחזיקים את המקש.</li><li>Left Shift – בעיטה; אם הכדור אצלך, בועטים לכיוון השער היריב.</li><li>X – החלפת שחקן הנשלט, כולל השוער.</li><li>אפשר למסור לשוער, לשלוט בו, לצאת מהשער ולעלות עם הכדור.</li><li>B – חטיפה קרובה.</li><li>G – גליץ׳ קדימה.</li><li>קרן ניתנת אם היריב נגע אחרון והכדור יצא מעבר לקו השער. בקרן שלך: Z למסירה או Q לעצירת מד ההגבהה; R ליד הכדור כדי לנגוח.</li><li>אם הכדור יוצא מעבר לקו השער אחרי נגיעה אחרונה שלך – היריב מקבל כדור שוער. בחוץ, הקבוצה שלא נגעה אחרונה מוציאה חוץ.</li><li>גרסה זו פועלת מקומית בדפדפן. מצב אונליין אמיתי עדיין אינו מחובר לשרת.</li></ul><button id="continue">המשך למשחק</button></div></div>
+<ul><li>משחק נגד בוט, עם 11 שחקנים בכל קבוצה.</li><li>WASD או חצים – תנועה.</li><li>Z – לחיצה קצרה למסירה; לחיצה ארוכה למסירת עומק לשטח.</li><li>C – ספרינט מהיר מאוד בזמן שמחזיקים את המקש.</li><li>Left Shift – בעיטה; אם הכדור אצלך, בועטים לכיוון השער היריב.</li><li>X – החלפת שחקן הנשלט, כולל השוער.</li><li>אפשר למסור לשוער, לשלוט בו, לצאת מהשער ולעלות עם הכדור.</li><li>B – חטיפה קרובה.</li><li>G – גליץ׳ קדימה. אם היריב מכשיל אותך כשהוא חוטף את הכדור, תקבל בעיטה חופשית; עבירה ברחבה היא פנדל.</li><li>קרן ניתנת אם היריב נגע אחרון והכדור יצא מעבר לקו השער. בקרן שלך: Z למסירה או Q לעצירת מד ההגבהה; R ליד הכדור כדי לנגוח.</li><li>אם הכדור יוצא מעבר לקו השער אחרי נגיעה אחרונה שלך – היריב מקבל כדור שוער. בחוץ, הקבוצה שלא נגעה אחרונה מוציאה חוץ.</li><li>גרסה זו פועלת מקומית בדפדפן. מצב אונליין אמיתי עדיין אינו מחובר לשרת.</li></ul><button id="continue">המשך למשחק</button></div></div>
+<div class="modal hidden" id="bySoccerModeModal"><div class="modalbox" style="max-width:560px"><h2 style="color:#d6a6ff">👑 THE BY SOCCER WIN MODE</h2><p>בחר את כוח הניצחון שלך:</p>
+<button class="by-mode-choice" data-mode="freeze" style="width:100%;margin:7px 0;background:#6a4c93;color:white">🧊 הקפא את כל שחקני הקבוצה היריבה</button>
+<button class="by-mode-choice" data-mode="score" style="width:100%;margin:7px 0;background:#2a9d55;color:white">🏆 ניצחון 300–0 לך</button>
+<button class="by-mode-choice" data-mode="steal" style="width:100%;margin:7px 0;background:#e76f51;color:white">🧲 חטיפה אוטומטית – כל פעם שהכדור מגיע ליריבה, הוא חוזר אליך</button>
+<button id="closeBySoccerMode" class="secondary" style="width:100%;margin-top:10px">סגור</button></div></div>
 <div class="modal hidden" id="endModal"><div class="modalbox"><h2 id="endTitle">המשחק הסתיים!</h2><p id="endText"></p><div id="endChoices" class="actions"></div><button id="again">משחק חדש</button></div></div>
+<div class="modal hidden" id="foulModal"><div class="modalbox" style="max-width:560px;text-align:center"><h2 id="foulTitle">🟨 עבירה! בעיטה חופשית</h2><p id="foulDesc">עצור את הריבוע באזור הירוק!</p><div style="position:relative;height:180px;margin:18px auto;max-width:320px;background:linear-gradient(90deg,#d62828 0%,#d62828 18%,#f4a261 18%,#f4a261 36%,#2a9d55 36%,#2a9d55 64%,#f4a261 64%,#f4a261 82%,#d62828 82%,#d62828 100%);border:4px solid #fff;border-radius:14px;overflow:hidden"><div id="foulMarker" style="position:absolute;left:0%;top:50%;width:28px;height:28px;background:#fff;border:3px solid #15232c;border-radius:5px;transform:translate(-50%,-50%) rotate(0deg);box-shadow:0 0 9px #000"></div></div><div style="display:flex;justify-content:space-between;font-weight:bold"><span style="color:#ff4b4b">אדום – חלש</span><span style="color:#20d66b">ירוק – מצטיין</span><span style="color:#ff4b4b">אדום – חלש</span></div><button id="stopFoulMeter" style="width:100%;margin-top:18px;font-size:20px">🛑 עצור את הריבוע!</button></div></div>
 <script>
 const clubs=[
 ["ברצלונה","BAR","#A50044","#004D98"],["ריאל מדריד","RMA","#FEBE10","#1D2951"],["באיירן מינכן","FCB","#DC052D","#0066B2"],["פריז סן ז׳רמן","PSG","#004170","#DA291C"],["יובנטוס","JUV","#111111","#FFFFFF"],["אינטר מילאן","INT","#010E80","#111111"],["AC מילאן","MIL","#FB090B","#111111"],["מנצ׳סטר סיטי","MCI","#6CABDD","#1C2C5B"],["מנצ׳סטר יונייטד","MUN","#DA291C","#FBE122"],["צ׳לסי","CHE","#034694","#FFFFFF"],["טוטנהאם","TOT","#132257","#FFFFFF"],["דורטמונד","BVB","#FDE100","#111111"],["רומא","ROM","#8E1F2F","#F2A900"],["ליברפול","LIV","#C8102E","#00B2A9"],["אתלטיקו מדריד","ATM","#CB3524","#272E61"],["ריאל בטיס","BET","#00954C","#FFFFFF"],["אספניול","ESP","#005DAA","#FFFFFF"],["ארסנל","ARS","#EF0107","#063672"],["ויאריאל","VIL","#FFE114","#005187"],["ולנסיה","VAL","#FF7900","#111111"],["ברייטון","BHA","#0057B8","#FFFFFF"],["קלן","KOE","#FFFFFF","#ED1C24"],["אינטר מיאמי","MIA","#F7B5CD","#111111"]];
@@ -99,12 +107,14 @@ const difficulty={easy:{speed:.65,enemySpeed:.65,press:.018,passRate:.35,wait:22
 function formation(){return [[.08,.5],[.25,.18],[.25,.38],[.25,.62],[.25,.82],[.46,.25],[.46,.5],[.46,.75],[.68,.22],[.68,.5],[.68,.78]]}
 function makeTeam(side,club){return formation().map((pos,i)=>{let x=side==="A"?field.x+pos[0]*field.w:field.x+(1-pos[0])*field.w;return{x,y:field.y+pos[1]*field.h,homeX:x,homeY:field.y+pos[1]*field.h,baseHomeX:x,baseHomeY:field.y+pos[1]*field.h,side,idx:i,keeper:i===0,club,stamina:1}})}
 function start(){let a=+$("#teamA").value,b=+$("#teamB").value;if(a===b){b=(b+1)%clubs.length;$("#teamB").value=b}
-game={A:makeTeam("A",a),B:makeTeam("B",b),ball:{x:W/2,y:H/2,vx:0,vy:0,owner:null,radius:8,lockedUntil:0,lastTouchSide:"A",isShot:false},enemyFrozenUntil:0,enemySlowUntil:0,enemySlowMultiplier:.22,enemyKeeperAwayUntil:0,userKeeperAwayUntil:0,userBoostUntil:0,userBoostMultiplier:2.5,ballMagnetUntil:0,ballMagnetStrength:0,shotBoost:1,scores:[0,0],minutes:+$("#duration").value,elapsed:0,playing:true,paused:0,goalFlash:0,diff:difficulty[$("#difficulty").value],kickoffSide:"A",botWait:0,botPlan:"build",keeperCaught:false,phase:"regular",extraElapsed:0,penaltyA:0,penaltyB:0,penaltyRound:0,teammateSpeed:1,opponentWobble:0,opponentSize:1,teammateSize:1,playerAura:null,ballTrail:null,ballCurve:0,ballGravity:0,ballBounce:.45,shotBoost:1,passBoost:1,timeScale:1,pitchTint:null,weather:null,customColors:null,particles:[],weatherSeed:0};
+game={A:makeTeam("A",a),B:makeTeam("B",b),ball:{x:W/2,y:H/2,vx:0,vy:0,owner:null,radius:8,lockedUntil:0,lastTouchSide:"A",isShot:false},enemyFrozenUntil:0,enemySlowUntil:0,enemySlowMultiplier:.22,enemyKeeperAwayUntil:0,userKeeperAwayUntil:0,userBoostUntil:0,userBoostMultiplier:2.5,ballMagnetUntil:0,ballMagnetStrength:0,shotBoost:1,scores:[0,0],minutes:+$("#duration").value,elapsed:0,playing:true,paused:0,goalFlash:0,diff:difficulty[$("#difficulty").value],kickoffSide:"A",botWait:0,botPlan:"build",keeperCaught:false,phase:"regular",extraElapsed:0,penaltyA:0,penaltyB:0,penaltyRound:0,teammateSpeed:1,opponentWobble:0,opponentSize:1,teammateSize:1,playerAura:null,ballTrail:null,ballCurve:0,ballGravity:0,ballBounce:.45,shotBoost:1,passBoost:1,timeScale:1,pitchTint:null,weather:null,customColors:null,particles:[],weatherSeed:0,foulMeterTimer:null,foulMeterStart:0,foulMeterPosition:0,foulMeterDirection:1,foulType:null,foulSpot:null};
 selected=9;$("#nameA").textContent=clubs[a][0];$("#nameB").textContent=clubs[b][0];$("#scoreA").textContent="0";$("#scoreB").textContent="0";$("#status").textContent="משחק התחיל";$("#matchInfo").textContent="רמת קושי: "+$("#difficulty").selectedOptions[0].textContent;$("#setup").classList.add("hidden");$("#endModal").classList.add("hidden");last=performance.now();kickoff("A")}
 function reset(){game=null;$("#endModal").classList.add("hidden");$("#setup").classList.remove("hidden");$("#status").textContent="בחר משחק כדי להתחיל";$("#clock").textContent="00:00";draw()}
 function nearest(team,x,y,skipKeeper=false){let best=-1,d=Infinity;team.forEach((p,i)=>{if(skipKeeper&&p.keeper)return;let q=(p.x-x)**2+(p.y-y)**2;if(q<d){d=q;best=i}});return best}
 function controlled(){return game.A[selected]}
-function giveOwner(side,index){if(!game)return;game.ball.crossing=false;game.ball.lastTouchSide=side;game.ball.lockedUntil=0;game.ball.owner={side,index};let p=game[side][index];if(side==="A")selected=index;game.ball.x=p.x+(side==="A"?14:-14);game.ball.y=p.y;game.ball.vx=game.ball.vy=0}
+function giveOwner(side,index){if(!game)return;
+ if(side==="B"&&game.bySoccerSteal){const enemy=game.B[index];const nearestA=nearest(game.A,enemy?.x??game.ball.x,enemy?.y??game.ball.y);side="A";index=nearestA>=0?nearestA:selected;}
+ game.ball.crossing=false;game.ball.lastTouchSide=side;game.ball.lockedUntil=0;game.ball.owner={side,index};let p=game[side][index];if(side==="A")selected=index;game.ball.x=p.x+(side==="A"?14:-14);game.ball.y=p.y;game.ball.vx=game.ball.vy=0}
 function kickoff(side){game.ball.x=W/2;game.ball.y=H/2;game.ball.vx=game.ball.vy=0;game.ball.owner=null;game.kickoffSide=side;game.paused=1.4;game.botWait=game.diff.wait/1000;game.A.forEach(p=>{p.homeX=p.baseHomeX;p.homeY=p.baseHomeY;p.x=p.homeX;p.y=p.homeY});game.B.forEach(p=>{p.homeX=p.baseHomeX;p.homeY=p.baseHomeY;p.x=p.homeX;p.y=p.homeY});game.ball.lockedUntil=0;if(side==="A")giveOwner("A",6);else giveOwner("B",6);$("#status").textContent=side==="A"?"הכדור שלך – פתיחת משחק":"פתיחת משחק – היריב מתחיל"}
 function kick(pass=false,through=false){
 if(!game||!game.playing||game.paused>0)return;
@@ -145,6 +155,23 @@ function switchPlayer(){
  selected=(selected+1)%game.A.length;
  $("#status").textContent=selected===0?"🧤 אתה שולט בשוער!":`אתה שולט בשחקן ${selected}`;
 }
+function awardFoul(carrier,challenger){
+ if(!game||!game.playing)return;
+ const inBox=carrier.x>=field.x+field.w*.77&&Math.abs(carrier.y-H/2)<=210;
+ const spot=inBox?{x:field.x+field.w*.82,y:H/2}:{x:Math.max(field.x+35,Math.min(field.x+field.w-35,carrier.x)),y:Math.max(field.y+35,Math.min(field.y+field.h-35,carrier.y))};
+ game.ball.owner=null;game.ball.vx=game.ball.vy=0;game.ball.x=spot.x;game.ball.y=spot.y;game.ball.isShot=false;game.foulType=inBox?'penalty':'free';game.foulSpot=spot;game.playing=false;
+ $('#foulTitle').textContent=inBox?'🟥 פנדל! עבירה ברחבה':'🟨 עבירה! בעיטה חופשית';
+ $('#foulDesc').textContent=inBox?'השחקן היריב הכשיל אותך בתוך הרחבה. יש לך פנדל אחד!':'השחקן היריב הכשיל אותך. עצור את הריבוע קרוב ככל האפשר למרכז הירוק!';
+ $('#foulModal').classList.remove('hidden');game.foulMeterStart=performance.now();game.foulMeterPosition=0;game.foulMeterDirection=1;
+ clearInterval(game.foulMeterTimer);
+ game.foulMeterTimer=setInterval(()=>{if(!game)return;let elapsed=(performance.now()-game.foulMeterStart)/1000;let pos=(Math.sin(elapsed*2.7+Math.sin(elapsed*1.31)*.8)+1)/2;game.foulMeterPosition=pos;let marker=$('#foulMarker');if(marker){marker.style.left=(pos*100)+'%';marker.style.transform=`translate(-50%,-50%) rotate(${elapsed*210}deg)`;}},25);
+}
+function takeFoulKick(){
+ if(!game||!game.foulType)return;clearInterval(game.foulMeterTimer);let v=game.foulMeterPosition;let quality=v>=.36&&v<=.64?'green':(v>=.18&&v<=.82?'orange':'red');let power=quality==='green'?11:quality==='orange'?8.2:5.2;
+ $('#foulModal').classList.add('hidden');game.playing=true;game.paused=.35;let spot=game.foulSpot;game.ball.x=spot.x;game.ball.y=spot.y;game.ball.owner=null;game.ball.lastTouchSide='A';game.ball.lockedUntil=performance.now()+300;game.ball.isShot=true;
+ let dx=1,dy=(H/2-spot.y)/Math.max(150,Math.abs(H/2-spot.y)+220);let len=Math.hypot(dx,dy)||1;game.ball.vx=dx/len*power;game.ball.vy=dy/len*power;game.foulType=null;game.foulSpot=null;$('#status').textContent=quality==='green'?'בעיטה מצוינת! 🟢':quality==='orange'?'בעיטה טובה! 🟠':'בעיטה חלשה! 🔴';
+}
+$('#stopFoulMeter').onclick=takeFoulKick;
 function tackle(slide){if(!game||game.paused>0)return;let p=controlled(),b=game.ball;if(b.owner?.side==="B"){let q=game.B[b.owner.index];if(distance(p,q)<(slide?65:42)){b.owner=null;giveOwner("A",selected)}}else if(!b.owner&&distance(p,b)<(slide?70:45))giveOwner("A",selected)}
 function goal(scoring){
  game.scores[scoring==="A"?0:1]++;
@@ -330,6 +357,8 @@ if(b.owner?.side==="A"){
  let challenger=game.B.filter(q=>!q.keeper).sort((u,v)=>distance(u,carrier)-distance(v,carrier))[0];
  let isKeeper=carrier.keeper;
  if(challenger&&distance(challenger,carrier)<(isKeeper?30:22)&&performance.now()>(carrier.shieldUntil||0)&&Math.random()<(isKeeper?0.12:0.045)*step){
+   // רק ב-30% מהחטיפות המוצלחות נשרקת עבירה; ב-70% זו חטיפה רגילה.
+   if(Math.random()<0.30){awardFoul(carrier,challenger);return;}
    giveOwner("B",challenger.idx);
    game.botWait=0.45;
    game.botPlan="counter";
@@ -649,6 +678,29 @@ document.querySelectorAll("[data-key]").forEach(btn=>{
  ["pointerup","pointerleave","pointercancel"].forEach(ev=>btn.addEventListener(ev,release))
 });
 $("#field").style.cursor="pointer";$("#field").onclick=()=>{if(!game)start()};$("#reset").onclick=reset;$("#again").onclick=()=>{$("#endModal").classList.add("hidden");reset()};$("#rulesBtn").onclick=()=>$("#rulesModal").classList.remove("hidden");$("#continue").onclick=()=>$("#rulesModal").classList.add("hidden");
+
+function openBySoccerMode(){
+ if(!game){$("#bySoccerModeModal").classList.remove("hidden");return;}
+ $("#bySoccerModeModal").classList.remove("hidden");
+}
+$("#bySoccerModeBtn").onclick=openBySoccerMode;
+$("#bySoccerModeInGameBtn").onclick=openBySoccerMode;
+$("#closeBySoccerMode").onclick=()=>$("#bySoccerModeModal").classList.add("hidden");
+document.querySelectorAll(".by-mode-choice").forEach(btn=>btn.onclick=()=>{
+ const mode=btn.dataset.mode;$("#bySoccerModeModal").classList.add("hidden");if(!game)start();game.bySoccerMode=mode;
+ if(mode==="freeze"){
+   game.enemyFrozenUntil=Number.MAX_SAFE_INTEGER;
+   game.B.forEach(q=>q.freezeUntil=Number.MAX_SAFE_INTEGER);
+   $("#status").textContent="🧊 כל שחקני היריבה קפואים!";
+ }else if(mode==="score"){
+   game.scores[0]=300;game.scores[1]=0;$("#scoreA").textContent="300";$("#scoreB").textContent="0";
+   $("#status").textContent="🏆 ניצחון 300–0 לך! ממשיכים לשחק.";
+ }else if(mode==="steal"){
+   game.bySoccerSteal=true;
+   if(game.ball.owner?.side==="B")giveOwner("A",nearest(game.A,game.ball.x,game.ball.y));
+   $("#status").textContent="🧲 חטיפה אוטומטית פעילה – היריבה לא יכולה להחזיק בכדור!";
+ }
+});
 </script>
 </body>
 </html>
