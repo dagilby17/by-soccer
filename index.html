@@ -36,7 +36,6 @@ small,.hint{color:#b7cbd7}.controls{display:flex;gap:8px;justify-content:center;
 <label>משך המשחק<select id="duration"><option value="5">5 דקות</option><option value="10" selected>10 דקות</option><option value="15">15 דקות</option><option value="20">20 דקות</option><option value="25">25 דקות</option><option value="30">30 דקות</option></select></label>
 </div>
 <small>בגרסה זו משחקים נגד בוט. מולטיפלייר בין מכשירים דורש שרת.</small>
-<button id="bySoccerModeBtn" style="margin-top:12px;width:100%;background:linear-gradient(90deg,#7b2cbf,#d62828);color:white;font-weight:bold;font-size:18px">👑 THE BY SOCCER WIN MODE</button>
 </section>
 <div class="gamegrid">
 <main>
@@ -45,7 +44,6 @@ small,.hint{color:#b7cbd7}.controls{display:flex;gap:8px;justify-content:center;
 <canvas id="field" width="2100" height="1275"></canvas>
 <div id="crossMeter" class="hidden" style="margin:8px auto;max-width:620px;background:#10232e;border:1px solid #456173;border-radius:12px;padding:10px;text-align:center"><strong id="crossLabel">הגבהה – לחץ Q כדי לעצור במרכז!</strong><div style="position:relative;height:24px;background:linear-gradient(90deg,#d62828 0%,#f4a261 25%,#2a9d55 50%,#f4a261 75%,#d62828 100%);border-radius:7px;margin-top:8px;overflow:hidden"><div id="crossMarker" style="position:absolute;top:-3px;left:50%;width:16px;height:16px;top:4px;background:#fff;border:2px solid #17212a;border-radius:3px;box-shadow:0 0 4px #000;transform:translateX(-50%)"></div></div><small>ככל שעוצרים קרוב יותר לאמצע – ההגבהה טובה יותר. Q לעצירה · Z למסירה קצרה</small></div>
 <div class="panel controls">
-<button id="bySoccerModeInGameBtn" style="width:100%;background:linear-gradient(90deg,#7b2cbf,#d62828);color:white;font-weight:bold;font-size:17px">👑 THE BY SOCCER WIN MODE – פתיחה תוך כדי משחק</button>
 <div class="touch">
 <button class="up" data-key="ArrowUp">▲</button><button class="left" data-key="ArrowLeft">◀</button><button class="down" data-key="ArrowDown">▼</button><button class="right" data-key="ArrowRight">▶</button>
 </div>
@@ -68,11 +66,7 @@ small,.hint{color:#b7cbd7}.controls{display:flex;gap:8px;justify-content:center;
 </div>
 <div class="modal hidden" id="rulesModal"><div class="modalbox"><h2>📜 חוקי המשחק והמקשים</h2>
 <ul><li>משחק נגד בוט, עם 11 שחקנים בכל קבוצה.</li><li>WASD או חצים – תנועה.</li><li>Z – לחיצה קצרה למסירה; לחיצה ארוכה למסירת עומק לשטח.</li><li>C – ספרינט מהיר מאוד בזמן שמחזיקים את המקש.</li><li>Left Shift – בעיטה; אם הכדור אצלך, בועטים לכיוון השער היריב.</li><li>X – החלפת שחקן הנשלט, כולל השוער.</li><li>אפשר למסור לשוער, לשלוט בו, לצאת מהשער ולעלות עם הכדור.</li><li>B – חטיפה קרובה.</li><li>G – גליץ׳ קדימה. אם היריב מכשיל אותך כשהוא חוטף את הכדור, תקבל בעיטה חופשית; עבירה ברחבה היא פנדל.</li><li>קרן ניתנת אם היריב נגע אחרון והכדור יצא מעבר לקו השער. בקרן שלך: Z למסירה או Q לעצירת מד ההגבהה; R ליד הכדור כדי לנגוח.</li><li>אם הכדור יוצא מעבר לקו השער אחרי נגיעה אחרונה שלך – היריב מקבל כדור שוער. בחוץ, הקבוצה שלא נגעה אחרונה מוציאה חוץ.</li><li>גרסה זו פועלת מקומית בדפדפן. מצב אונליין אמיתי עדיין אינו מחובר לשרת.</li></ul><button id="continue">המשך למשחק</button></div></div>
-<div class="modal hidden" id="bySoccerModeModal"><div class="modalbox" style="max-width:560px"><h2 style="color:#d6a6ff">👑 THE BY SOCCER WIN MODE</h2><p>בחר את כוח הניצחון שלך:</p>
-<button class="by-mode-choice" data-mode="freeze" style="width:100%;margin:7px 0;background:#6a4c93;color:white">🧊 הקפא את כל שחקני הקבוצה היריבה</button>
-<button class="by-mode-choice" data-mode="score" style="width:100%;margin:7px 0;background:#2a9d55;color:white">🏆 ניצחון 300–0 לך</button>
-<button class="by-mode-choice" data-mode="steal" style="width:100%;margin:7px 0;background:#e76f51;color:white">🧲 חטיפה אוטומטית – כל פעם שהכדור מגיע ליריבה, הוא חוזר אליך</button>
-<button id="closeBySoccerMode" class="secondary" style="width:100%;margin-top:10px">סגור</button></div></div>
+
 <div class="modal hidden" id="endModal"><div class="modalbox"><h2 id="endTitle">המשחק הסתיים!</h2><p id="endText"></p><div id="endChoices" class="actions"></div><button id="again">משחק חדש</button></div></div>
 <div class="modal hidden" id="foulModal"><div class="modalbox" style="max-width:560px;text-align:center"><h2 id="foulTitle">🟨 עבירה! בעיטה חופשית</h2><p id="foulDesc">עצור את הריבוע באזור הירוק!</p><div style="position:relative;height:180px;margin:18px auto;max-width:320px;background:linear-gradient(90deg,#d62828 0%,#d62828 18%,#f4a261 18%,#f4a261 36%,#2a9d55 36%,#2a9d55 64%,#f4a261 64%,#f4a261 82%,#d62828 82%,#d62828 100%);border:4px solid #fff;border-radius:14px;overflow:hidden"><div id="foulMarker" style="position:absolute;left:0%;top:50%;width:28px;height:28px;background:#fff;border:3px solid #15232c;border-radius:5px;transform:translate(-50%,-50%) rotate(0deg);box-shadow:0 0 9px #000"></div></div><div style="display:flex;justify-content:space-between;font-weight:bold"><span style="color:#ff4b4b">אדום – חלש</span><span style="color:#20d66b">ירוק – מצטיין</span><span style="color:#ff4b4b">אדום – חלש</span></div><button id="stopFoulMeter" style="width:100%;margin-top:18px;font-size:20px">🛑 עצור את הריבוע!</button></div></div>
 <script>
@@ -113,7 +107,6 @@ function reset(){game=null;$("#endModal").classList.add("hidden");$("#setup").cl
 function nearest(team,x,y,skipKeeper=false){let best=-1,d=Infinity;team.forEach((p,i)=>{if(skipKeeper&&p.keeper)return;let q=(p.x-x)**2+(p.y-y)**2;if(q<d){d=q;best=i}});return best}
 function controlled(){return game.A[selected]}
 function giveOwner(side,index){if(!game)return;
- if(side==="B"&&game.bySoccerSteal){const enemy=game.B[index];const nearestA=nearest(game.A,enemy?.x??game.ball.x,enemy?.y??game.ball.y);side="A";index=nearestA>=0?nearestA:selected;}
  game.ball.crossing=false;game.ball.lastTouchSide=side;game.ball.lockedUntil=0;game.ball.owner={side,index};let p=game[side][index];if(side==="A")selected=index;game.ball.x=p.x+(side==="A"?14:-14);game.ball.y=p.y;game.ball.vx=game.ball.vy=0}
 function kickoff(side){game.ball.x=W/2;game.ball.y=H/2;game.ball.vx=game.ball.vy=0;game.ball.owner=null;game.kickoffSide=side;game.paused=1.4;game.botWait=game.diff.wait/1000;game.A.forEach(p=>{p.homeX=p.baseHomeX;p.homeY=p.baseHomeY;p.x=p.homeX;p.y=p.homeY});game.B.forEach(p=>{p.homeX=p.baseHomeX;p.homeY=p.baseHomeY;p.x=p.homeX;p.y=p.homeY});game.ball.lockedUntil=0;if(side==="A")giveOwner("A",6);else giveOwner("B",6);$("#status").textContent=side==="A"?"הכדור שלך – פתיחת משחק":"פתיחת משחק – היריב מתחיל"}
 function kick(pass=false,through=false){
@@ -679,28 +672,7 @@ document.querySelectorAll("[data-key]").forEach(btn=>{
 });
 $("#field").style.cursor="pointer";$("#field").onclick=()=>{if(!game)start()};$("#reset").onclick=reset;$("#again").onclick=()=>{$("#endModal").classList.add("hidden");reset()};$("#rulesBtn").onclick=()=>$("#rulesModal").classList.remove("hidden");$("#continue").onclick=()=>$("#rulesModal").classList.add("hidden");
 
-function openBySoccerMode(){
- if(!game){$("#bySoccerModeModal").classList.remove("hidden");return;}
- $("#bySoccerModeModal").classList.remove("hidden");
-}
-$("#bySoccerModeBtn").onclick=openBySoccerMode;
-$("#bySoccerModeInGameBtn").onclick=openBySoccerMode;
-$("#closeBySoccerMode").onclick=()=>$("#bySoccerModeModal").classList.add("hidden");
-document.querySelectorAll(".by-mode-choice").forEach(btn=>btn.onclick=()=>{
- const mode=btn.dataset.mode;$("#bySoccerModeModal").classList.add("hidden");if(!game)start();game.bySoccerMode=mode;
- if(mode==="freeze"){
-   game.enemyFrozenUntil=Number.MAX_SAFE_INTEGER;
-   game.B.forEach(q=>q.freezeUntil=Number.MAX_SAFE_INTEGER);
-   $("#status").textContent="🧊 כל שחקני היריבה קפואים!";
- }else if(mode==="score"){
-   game.scores[0]=300;game.scores[1]=0;$("#scoreA").textContent="300";$("#scoreB").textContent="0";
-   $("#status").textContent="🏆 ניצחון 300–0 לך! ממשיכים לשחק.";
- }else if(mode==="steal"){
-   game.bySoccerSteal=true;
-   if(game.ball.owner?.side==="B")giveOwner("A",nearest(game.A,game.ball.x,game.ball.y));
-   $("#status").textContent="🧲 חטיפה אוטומטית פעילה – היריבה לא יכולה להחזיק בכדור!";
- }
-});
+
 </script>
 </body>
 </html>
